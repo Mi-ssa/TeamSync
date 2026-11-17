@@ -1,0 +1,138 @@
+<main class="page dashboard-page">
+  <section class="welcome-banner">
+    <div class="welcome-copy">
+      <span class="eyebrow">TU ESPACIO DE EQUIPO</span>
+      <h1>Hola, {{ auth.user()?.nombre }}. <span>Hagamos que pase.</span></h1>
+      <p>Un buen proyecto empieza cuando cada quien sabe cómo aportar.</p>
+    </div>
+    <div class="welcome-decoration" aria-hidden="true">
+      <span class="deco-orbit"></span>
+      <span class="deco-dot dot-a"></span>
+      <span class="deco-dot dot-b"></span>
+      <span class="deco-star">✦</span>
+      <div class="deco-check">✓</div>
+    </div>
+  </section>
+
+  @if (error()) {
+    <p class="error-message dashboard-error" role="alert">{{ error() }}</p>
+  }
+
+  @if (proyectoService.invitations().length) {
+    <section class="invitation-panel panel">
+      <div class="section-title">
+        <span class="invitation-symbol">✉</span>
+        <div>
+          <h2>Tienes invitaciones</h2>
+          <p>Revisa los proyectos que te esperan.</p>
+        </div>
+        <span class="section-count">{{ proyectoService.invitations().length }}</span>
+      </div>
+      <div class="invitation-list">
+        @for (invitation of proyectoService.invitations(); track invitation.id) {
+          <article class="invitation-row">
+            <div class="invitation-project-mark">{{ invitation.nombre_proyecto.charAt(0).toUpperCase() }}</div>
+            <div class="invitation-info">
+              <strong>{{ invitation.nombre_proyecto }}</strong>
+              <span>Te invitaron a colaborar en este proyecto</span>
+            </div>
+            <div class="invitation-actions">
+              <button
+                class="button button-secondary button-small"
+                type="button"
+                [disabled]="respondingId() === invitation.id"
+                (click)="answerInvitation(invitation.id, 'rechazar')"
+              >Rechazar</button>
+              <button
+                class="button button-small"
+                type="button"
+                [disabled]="respondingId() === invitation.id"
+                (click)="answerInvitation(invitation.id, 'aceptar')"
+              >Aceptar invitación</button>
+            </div>
+          </article>
+        }
+      </div>
+    </section>
+  }
+
+  <section class="projects-section">
+    <div class="page-heading">
+      <div>
+        <span class="eyebrow">COLABORACIÓN EN MARCHA</span>
+        <h2>Mis proyectos</h2>
+        <p>Espacios donde tu contribución hace la diferencia.</p>
+      </div>
+      <button class="button" type="button" (click)="showProjectModal.set(true)">
+        <span class="plus">+</span> Nuevo proyecto
+      </button>
+    </div>
+
+    @if (loading()) {
+      <div class="loading-state"><span class="spinner"></span> Cargando tus proyectos…</div>
+    } @else if (proyectoService.projects().length) {
+      <div class="project-grid">
+        @for (project of proyectoService.projects(); track project.id; let index = $index) {
+          <a class="project-card card" [routerLink]="['/proyectos', project.id]">
+            <div class="project-card-top">
+              <span class="project-icon tone-{{ index % 4 }}">{{ project.nombre.charAt(0).toUpperCase() }}</span>
+              @if (project.creado_por_id) {
+                <span class="project-arrow" aria-hidden="true">↗</span>
+              }
+            </div>
+            <h3>{{ project.nombre }}</h3>
+            <p>{{ project.descripcion || 'Un espacio para coordinar ideas y avanzar en equipo.' }}</p>
+            <div class="project-card-bottom">
+              <span><span class="tiny-status"></span> En marcha</span>
+              <span class="card-link">Ver proyecto <b>→</b></span>
+            </div>
+          </a>
+        }
+        <button class="new-project-card" type="button" (click)="showProjectModal.set(true)">
+          <span class="new-project-plus">+</span>
+          <strong>Crear otro proyecto</strong>
+          <span>Invita al equipo y empiecen a colaborar</span>
+        </button>
+      </div>
+    } @else {
+      <div class="empty-state panel">
+        <span class="empty-icon">✦</span>
+        <h3>Tu primer proyecto empieza aquí</h3>
+        <p>Crea un proyecto o acepta una invitación para comenzar a coordinar el trabajo de tu equipo.</p>
+        <button class="button" type="button" (click)="showProjectModal.set(true)">Crear un proyecto</button>
+      </div>
+    }
+  </section>
+</main>
+
+@if (showProjectModal()) {
+  <div class="modal-backdrop" (click)="closeProjectModal()">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="create-project-title" (click)="$event.stopPropagation()">
+      <div class="modal-heading">
+        <div>
+          <span class="eyebrow">NUEVO ESPACIO</span>
+          <h2 id="create-project-title">Crea un proyecto</h2>
+          <p>Serás el líder y podrás invitar a tu equipo.</p>
+        </div>
+        <button class="modal-close" type="button" aria-label="Cerrar" (click)="closeProjectModal()">×</button>
+      </div>
+      <form class="form-stack" [formGroup]="form" (ngSubmit)="createProject()">
+        <div class="field">
+          <label for="project-name">Nombre del proyecto</label>
+          <input id="project-name" formControlName="nombre" maxlength="160" placeholder="Ej. Feria de ciencias" />
+          @if (form.controls.nombre.touched && form.controls.nombre.invalid) {
+            <span class="field-error">Escribe un nombre de proyecto.</span>
+          }
+        </div>
+        <div class="field">
+          <label for="project-description">Descripción <span class="optional">(opcional)</span></label>
+          <textarea id="project-description" formControlName="descripcion" placeholder="¿Qué quieren lograr juntos?"></textarea>
+        </div>
+        <div class="form-actions">
+          <button class="button button-secondary" type="button" (click)="closeProjectModal()">Cancelar</button>
+          <button class="button" type="submit" [disabled]="submitting()">{{ submitting() ? 'Creando…' : 'Crear proyecto' }}</button>
+        </div>
+      </form>
+    </section>
+  </div>
+}

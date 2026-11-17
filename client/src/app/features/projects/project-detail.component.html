@@ -1,0 +1,223 @@
+<main class="page project-detail-page">
+  <a class="back-link" routerLink="/dashboard"><span aria-hidden="true">←</span> Volver a mis proyectos</a>
+
+  @if (error()) {
+    <p class="error-message detail-error" role="alert">{{ error() }}</p>
+  }
+
+  @if (loading()) {
+    <div class="loading-state"><span class="spinner"></span> Cargando proyecto…</div>
+  } @else if (project(); as currentProject) {
+    <section class="project-hero">
+      <div class="project-hero-icon">{{ currentProject.nombre.charAt(0).toUpperCase() }}</div>
+      <div class="project-hero-copy">
+        <div class="project-label">
+          <span class="eyebrow">ESPACIO DE COLABORACIÓN</span>
+          @if (isLeader()) {
+            <span class="role-badge">✦ Líder</span>
+          }
+        </div>
+        <h1>{{ currentProject.nombre }}</h1>
+        <p>{{ currentProject.descripcion || 'Alineen sus ideas, acuerden las tareas y avancen juntos.' }}</p>
+      </div>
+      <div class="project-hero-count">
+        <span>{{ activityService.activities().length }}</span>
+        <small>actividades</small>
+      </div>
+    </section>
+
+    <div class="project-layout">
+      <section class="activities-column">
+        <div class="section-header">
+          <div>
+            <span class="eyebrow">PLAN DE TRABAJO</span>
+            <h2>Actividades <span class="section-count">{{ activityService.activities().length }}</span></h2>
+          </div>
+          @if (isLeader()) {
+            <button class="button button-secondary" type="button" (click)="toggleActivityForm()">
+              <span class="plus">+</span> Nueva actividad
+            </button>
+          }
+        </div>
+
+        @if (showActivityForm() && isLeader()) {
+          <section class="panel activity-create-panel">
+            <div class="section-title">
+              <div>
+                <h2>Definir una actividad</h2>
+                <p>Asigna una persona responsable y acuerden los puntos.</p>
+              </div>
+              <button class="modal-close" type="button" aria-label="Cerrar formulario" (click)="showActivityForm.set(false)">×</button>
+            </div>
+            <form class="activity-form" [formGroup]="activityForm" (ngSubmit)="createActivity()">
+              <div class="field">
+                <label for="activity-name">Nombre</label>
+                <input id="activity-name" formControlName="nombre" placeholder="Ej. Investigar materiales" />
+              </div>
+              <div class="field">
+                <label for="activity-description">Descripción <span class="optional">(opcional)</span></label>
+                <input id="activity-description" formControlName="descripcion" placeholder="¿Qué debe entregarse?" />
+              </div>
+              <div class="activity-form-row">
+                <div class="field">
+                  <label for="activity-points">Puntos acordados</label>
+                  <input id="activity-points" type="number" min="0" step="0.5" formControlName="puntos_acordados" />
+                </div>
+                <div class="field">
+                  <label for="activity-member">Responsable</label>
+                  <select id="activity-member" formControlName="responsable_id">
+                    <option value="" disabled>Elige a un integrante</option>
+                    @for (member of members(); track member.id) {
+                      <option [value]="member.id">{{ member.nombre }}{{ member.rol === 'lider' ? ' (líder)' : '' }}</option>
+                    }
+                  </select>
+                </div>
+              </div>
+              @if (activityForm.touched && activityForm.invalid) {
+                <p class="field-error">Completa el nombre, los puntos y el responsable.</p>
+              }
+              <div class="form-actions">
+                <button class="button button-secondary" type="button" (click)="showActivityForm.set(false)">Cancelar</button>
+                <button class="button" type="submit" [disabled]="creatingActivity()">{{ creatingActivity() ? 'Guardando…' : 'Crear actividad' }}</button>
+              </div>
+            </form>
+          </section>
+        }
+
+        @if (activityService.activities().length) {
+          <div class="activity-list">
+            @for (activity of activityService.activities(); track activity.id) {
+              <article class="activity-card panel">
+                <div class="activity-card-top">
+                  <span class="activity-number">T{{ activity.id.toString().padStart(2, '0') }}</span>
+                  <span class="status {{ statusClass(activity) }}">{{ status(activity) }}</span>
+                </div>
+                <div class="activity-main">
+                  <h3>{{ activity.nombre }}</h3>
+                  @if (activity.descripcion) {
+                    <p class="activity-description">{{ activity.descripcion }}</p>
+                  }
+                  <div class="activity-meta">
+                    <span class="assignee"><span class="assignee-avatar">{{ memberName(activity.responsable_id).charAt(0).toUpperCase() }}</span>{{ memberName(activity.responsable_id) }}</span>
+                    <span class="points"><span aria-hidden="true">✦</span> {{ activity.puntos_acordados }} puntos</span>
+                  </div>
+                </div>
+
+                @if (activityService.advances()[activity.id]?.length) {
+                  <div class="progress-list">
+                    @for (progress of activityService.advances()[activity.id]; track progress.id) {
+                      <div class="progress-item">
+                        <div class="progress-item-heading">
+                          <span class="progress-label">AVANCE ENVIADO</span>
+                          <span class="progress-date">{{ progress.creado_en | date: 'd MMM, y' }}</span>
+                        </div>
+                        <p>{{ progress.descripcion }}</p>
+                        @if (progress.url_evidencia) {
+                          <a class="evidence-link" [href]="progress.url_evidencia" target="_blank" rel="noopener noreferrer">↗ Ver evidencia</a>
+                        }
+                        @if (isLeader() && progress.estado === 'pendiente') {
+                          <div class="review-actions">
+                            <span>¿Validar este avance?</span>
+                            <button class="button button-danger button-small" type="button" [disabled]="reviewingAdvance() === progress.id" (click)="review(progress, activity.id, 'rechazado')">Rechazar</button>
+                            <button class="button button-small" type="button" [disabled]="reviewingAdvance() === progress.id" (click)="review(progress, activity.id, 'aprobado')">Aprobar avance</button>
+                          </div>
+                        } @else if (progress.estado !== 'pendiente') {
+                          <span class="progress-result" [class]="progress.estado === 'aprobado' ? 'progress-result approved' : 'progress-result rejected'">
+                            {{ progress.estado === 'aprobado' ? 'Avance aprobado' : 'Avance rechazado' }}
+                          </span>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+
+                @if (canSubmitAdvance(activity)) {
+                  @if (activeAdvanceActivity() === activity.id) {
+                    <form class="advance-form" [formGroup]="advanceForm" (ngSubmit)="submitAdvance(activity.id)">
+                      <div class="field">
+                        <label [for]="'advance-description-' + activity.id">Cuéntanos qué avanzaste</label>
+                        <textarea [id]="'advance-description-' + activity.id" formControlName="descripcion" placeholder="Describe tu contribución y lo que completaste…"></textarea>
+                      </div>
+                      <div class="field">
+                        <label [for]="'advance-link-' + activity.id">Enlace de evidencia <span class="optional">(opcional)</span></label>
+                        <input [id]="'advance-link-' + activity.id" type="url" formControlName="url_evidencia" placeholder="https://…" />
+                        @if (advanceForm.controls.url_evidencia.touched && advanceForm.controls.url_evidencia.invalid) {
+                          <span class="field-error">Usa un enlace que comience con http:// o https://.</span>
+                        }
+                      </div>
+                      <div class="form-actions">
+                        <button class="button button-secondary" type="button" (click)="toggleAdvance(activity.id)">Cancelar</button>
+                        <button class="button" type="submit" [disabled]="sendingAdvance()">{{ sendingAdvance() ? 'Enviando…' : 'Enviar avance' }}</button>
+                      </div>
+                    </form>
+                  } @else {
+                    <button class="submit-progress-button" type="button" (click)="toggleAdvance(activity.id)">
+                      <span>↑</span> Registrar mi avance
+                    </button>
+                  }
+                }
+              </article>
+            }
+          </div>
+        } @else {
+          <div class="empty-state panel activity-empty">
+            <span class="empty-icon">☷</span>
+            <h3>Aún no hay actividades</h3>
+            <p>{{ isLeader() ? 'Crea la primera actividad, acuerda sus puntos y asigna a una persona responsable.' : 'Cuando el líder agregue actividades, aparecerán aquí.' }}</p>
+            @if (isLeader()) {
+              <button class="button" type="button" (click)="showActivityForm.set(true)">Crear primera actividad</button>
+            }
+          </div>
+        }
+      </section>
+
+      <aside class="team-column">
+        <section class="panel team-panel">
+          <div class="section-title team-title">
+            <div>
+              <span class="eyebrow">LAS PERSONAS</span>
+              <h2>Integrantes <span class="section-count">{{ members().length }}</span></h2>
+            </div>
+            <span class="team-icon">♧</span>
+          </div>
+          <div class="member-list">
+            @for (member of members(); track member.id) {
+              <div class="member-row">
+                <span class="member-avatar member-tone-{{ member.id % 4 }}">{{ member.nombre.charAt(0).toUpperCase() }}</span>
+                <div class="member-details">
+                  <strong>{{ member.nombre }}{{ member.id === auth.user()?.id ? ' (tú)' : '' }}</strong>
+                  <span>{{ member.correo }}</span>
+                </div>
+                @if (member.rol === 'lider') {
+                  <span class="leader-label">Líder</span>
+                }
+              </div>
+            }
+          </div>
+          @if (isLeader()) {
+            <div class="invite-section">
+              <div class="invite-caption">
+                <strong>¿Falta alguien?</strong>
+                <span>Invítale por correo para sumarlo.</span>
+              </div>
+              <form class="invite-form" [formGroup]="inviteForm" (ngSubmit)="invite()">
+                <div class="field">
+                  <label for="invite-email">Correo electrónico</label>
+                  <input id="invite-email" type="email" formControlName="correo" placeholder="compañero@equipo.com" />
+                </div>
+                <button class="button invite-button" type="submit" [disabled]="inviting()">{{ inviting() ? 'Enviando…' : 'Enviar invitación' }}</button>
+              </form>
+              @if (inviteMessage()) {
+                <p class="invite-feedback" [class]="inviteMessage().startsWith('Invitación enviada') ? 'invite-feedback success' : 'invite-feedback error'">{{ inviteMessage() }}</p>
+              }
+            </div>
+          }
+        </section>
+        <div class="team-tip">
+          <span class="tip-icon">✦</span>
+          <p>Los puntos se acuerdan antes de empezar. Así cada contribución queda clara para todo el equipo.</p>
+        </div>
+      </aside>
+    </div>
+  }
+</main>

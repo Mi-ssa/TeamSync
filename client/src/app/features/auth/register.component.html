@@ -1,0 +1,70 @@
+<main class="auth-page">
+  <section class="auth-showcase">
+    <a class="brand auth-brand" routerLink="/login">
+      <span class="brand-mark">T</span>
+      <span>team<span class="brand-accent">sync</span></span>
+    </a>
+    <div class="showcase-copy">
+      <div class="showcase-tag"><span class="sparkle">✦</span> Tu equipo empieza aquí</div>
+      <h1>Grandes ideas<br /><span>se hacen en equipo.</span></h1>
+      <p>Define acuerdos, comparte avances y celebra cada contribución.</p>
+      <div class="showcase-illustration" aria-hidden="true">
+        <div class="orbit orbit-one"></div>
+        <div class="orbit orbit-two"></div>
+        <div class="illustration-card card-back">✦ <span>Meta alcanzada</span></div>
+        <div class="illustration-card card-front">
+          <div class="mini-avatars"><i>M</i><i>A</i><i>L</i><b>+2</b></div>
+          <div class="mini-lines"><span></span><span></span></div>
+          <div class="mini-progress"><span></span></div>
+        </div>
+        <span class="floating-star star-one">✦</span>
+        <span class="floating-star star-two">✧</span>
+      </div>
+    </div>
+    <div class="showcase-footer">Una mejor manera de construir juntos.</div>
+  </section>
+
+  <section class="auth-content">
+    <div class="auth-form-wrap">
+      <div class="mobile-brand">
+        <a class="brand" routerLink="/login"><span class="brand-mark">T</span><span>team<span class="brand-accent">sync</span></span></a>
+      </div>
+      <div class="auth-heading">
+        <span class="eyebrow">EMPIEZA CON TU EQUIPO</span>
+        <h2>Crea tu cuenta</h2>
+        <p>Solo toma un momento. El trabajo en equipo viene después.</p>
+      </div>
+      <form class="form-stack" [formGroup]="form" (ngSubmit)="submit()">
+        <div class="field">
+          <label for="nombre">Nombre completo</label>
+          <input id="nombre" type="text" formControlName="nombre" autocomplete="name" placeholder="¿Cómo te llamas?" />
+          @if (form.controls.nombre.touched && form.controls.nombre.invalid) {
+            <span class="field-error">Escribe tu nombre (máximo 120 caracteres).</span>
+          }
+        </div>
+        <div class="field">
+          <label for="correo">Correo electrónico</label>
+          <input id="correo" type="email" formControlName="correo" autocomplete="email" placeholder="tu@equipo.com" />
+          @if (form.controls.correo.touched && form.controls.correo.invalid) {
+            <span class="field-error">Ingresa un correo válido.</span>
+          }
+        </div>
+        <div class="field">
+          <label for="contrasena">Contraseña</label>
+          <input id="contrasena" type="password" formControlName="contrasena" autocomplete="new-password" placeholder="Al menos 8 caracteres" />
+          @if (form.controls.contrasena.touched && form.controls.contrasena.invalid) {
+            <span class="field-error">Usa al menos 8 caracteres.</span>
+          }
+        </div>
+        @if (error()) {
+          <p class="error-message" role="alert">{{ error() }}</p>
+        }
+        <button class="button auth-submit" type="submit" [disabled]="submitting()">
+          {{ submitting() ? 'Creando cuenta…' : 'Crear mi cuenta' }} <span aria-hidden="true">→</span>
+        </button>
+      </form>
+      <p class="auth-switch">¿Ya tienes una cuenta? <a routerLink="/login">Inicia sesión</a></p>
+    </div>
+    <span class="auth-note">Hecho para equipos que hacen su parte.</span>
+  </section>
+</main>

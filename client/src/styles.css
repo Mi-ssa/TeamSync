@@ -1,1 +1,399 @@
-/* You can add global styles to this file, and also import other style files */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
+
+:root {
+  color-scheme: light;
+  --primary: #6254d9;
+  --primary-dark: #4d40bd;
+  --lavender: #eeecff;
+  --ink: #24233a;
+  --muted: #77778c;
+  --line: #e9e8f1;
+  --canvas: #f8f8fc;
+  --green: #258568;
+  --green-light: #e6f5ef;
+  --amber: #a76b13;
+  --amber-light: #fff3dc;
+  --red: #c24e5c;
+  --red-light: #fff0f1;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--ink);
+  background: var(--canvas);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+
+h1,
+h2,
+h3 {
+  font-family: 'Manrope', sans-serif;
+}
+
+.page {
+  margin: 0 auto;
+  max-width: 1180px;
+  padding: 42px 28px 80px;
+}
+
+.eyebrow {
+  color: var(--primary);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+
+.page-heading {
+  align-items: flex-end;
+  display: flex;
+  gap: 20px;
+  justify-content: space-between;
+  margin-bottom: 32px;
+}
+
+.page-heading h1 {
+  font-size: clamp(28px, 4vw, 38px);
+  letter-spacing: -1.6px;
+  line-height: 1.15;
+  margin-bottom: 8px;
+}
+
+.page-heading p,
+.muted {
+  color: var(--muted);
+}
+
+.button {
+  align-items: center;
+  background: var(--primary);
+  border: 1px solid var(--primary);
+  border-radius: 10px;
+  color: white;
+  display: inline-flex;
+  font-size: 13px;
+  font-weight: 700;
+  gap: 8px;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 17px;
+  text-decoration: none;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.button:hover {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+}
+
+.button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+  transform: none;
+}
+
+.button-secondary {
+  background: white;
+  border-color: var(--line);
+  color: var(--ink);
+}
+
+.button-secondary:hover,
+.button-quiet:hover {
+  background: var(--lavender);
+  border-color: #d7d2ff;
+  color: var(--primary-dark);
+}
+
+.button-quiet {
+  background: transparent;
+  border-color: transparent;
+  color: var(--muted);
+}
+
+.button-danger {
+  background: white;
+  border-color: #f1cdd1;
+  color: var(--red);
+}
+
+.button-danger:hover {
+  background: var(--red-light);
+  border-color: #eab9bf;
+}
+
+.button-small {
+  min-height: 36px;
+  padding: 0 12px;
+}
+
+.panel,
+.card {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 0 5px 22px rgba(38, 34, 81, 0.035);
+}
+
+.panel {
+  padding: 24px;
+}
+
+.section-title {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.section-title h2 {
+  font-size: 17px;
+  letter-spacing: -0.4px;
+  margin: 0;
+}
+
+.section-count {
+  align-items: center;
+  background: var(--lavender);
+  border-radius: 99px;
+  color: var(--primary);
+  display: inline-flex;
+  font-size: 11px;
+  font-weight: 700;
+  height: 22px;
+  justify-content: center;
+  min-width: 22px;
+  padding: 0 7px;
+}
+
+.form-stack {
+  display: grid;
+  gap: 16px;
+}
+
+.field {
+  display: grid;
+  gap: 7px;
+}
+
+.field label {
+  color: #55546b;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.field input,
+.field textarea,
+.field select {
+  background: #fff;
+  border: 1px solid #dfdeea;
+  border-radius: 9px;
+  color: var(--ink);
+  font-size: 14px;
+  outline: none;
+  padding: 12px 13px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  width: 100%;
+}
+
+.field input:focus,
+.field textarea:focus,
+.field select:focus {
+  border-color: #9389ee;
+  box-shadow: 0 0 0 3px rgba(98, 84, 217, 0.11);
+}
+
+.field textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.inline-form {
+  align-items: end;
+  display: flex;
+  gap: 12px;
+}
+
+.inline-form .field {
+  flex: 1;
+}
+
+.error-message {
+  background: var(--red-light);
+  border: 1px solid #f5d6d9;
+  border-radius: 9px;
+  color: #a43846;
+  font-size: 13px;
+  padding: 11px 13px;
+}
+
+.success-message {
+  background: var(--green-light);
+  border-radius: 9px;
+  color: #226b55;
+  font-size: 13px;
+  padding: 11px 13px;
+}
+
+.empty-state {
+  align-items: center;
+  color: var(--muted);
+  display: flex;
+  flex-direction: column;
+  padding: 42px 20px;
+  text-align: center;
+}
+
+.empty-icon {
+  align-items: center;
+  background: var(--lavender);
+  border-radius: 16px;
+  color: var(--primary);
+  display: flex;
+  font-size: 23px;
+  height: 52px;
+  justify-content: center;
+  margin-bottom: 14px;
+  width: 52px;
+}
+
+.empty-state h3 {
+  color: var(--ink);
+  font-size: 16px;
+  margin-bottom: 6px;
+}
+
+.empty-state p {
+  font-size: 13px;
+  margin-bottom: 0;
+  max-width: 380px;
+}
+
+.modal-backdrop {
+  align-items: center;
+  background: rgba(27, 24, 55, 0.38);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 20px;
+  position: fixed;
+  z-index: 10;
+}
+
+.modal {
+  background: white;
+  border-radius: 17px;
+  box-shadow: 0 22px 80px rgba(24, 20, 67, 0.2);
+  max-width: 480px;
+  padding: 26px;
+  width: 100%;
+}
+
+.modal-heading {
+  align-items: flex-start;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 22px;
+}
+
+.modal-heading h2 {
+  font-size: 20px;
+  letter-spacing: -0.6px;
+  margin-bottom: 5px;
+}
+
+.modal-heading p {
+  color: var(--muted);
+  font-size: 13px;
+  margin-bottom: 0;
+}
+
+.modal-close {
+  background: transparent;
+  border: 0;
+  color: var(--muted);
+  font-size: 23px;
+  line-height: 1;
+  padding: 0 3px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 9px;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.status {
+  border-radius: 99px;
+  display: inline-flex;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 6px 10px;
+  text-transform: capitalize;
+}
+
+.status-pending {
+  background: var(--amber-light);
+  color: var(--amber);
+}
+
+.status-progress {
+  background: #eaf0ff;
+  color: #4760af;
+}
+
+.status-approved {
+  background: var(--green-light);
+  color: var(--green);
+}
+
+@media (max-width: 700px) {
+  .page {
+    padding: 28px 17px 58px;
+  }
+
+  .page-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    margin-bottom: 24px;
+  }
+
+  .panel {
+    padding: 18px;
+  }
+
+  .inline-form {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

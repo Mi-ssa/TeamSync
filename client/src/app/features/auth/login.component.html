@@ -1,0 +1,63 @@
+<main class="auth-page">
+  <section class="auth-showcase">
+    <a class="brand auth-brand" routerLink="/login">
+      <span class="brand-mark">T</span>
+      <span>team<span class="brand-accent">sync</span></span>
+    </a>
+    <div class="showcase-copy">
+      <div class="showcase-tag"><span class="sparkle">✦</span> Trabajo en equipo, con propósito</div>
+      <h1>El esfuerzo de todos<br /><span>sí cuenta.</span></h1>
+      <p>Organiza proyectos, reconoce contribuciones y avanza en equipo con claridad.</p>
+      <div class="showcase-illustration" aria-hidden="true">
+        <div class="orbit orbit-one"></div>
+        <div class="orbit orbit-two"></div>
+        <div class="illustration-card card-back">✓ <span>Avance aprobado</span></div>
+        <div class="illustration-card card-front">
+          <div class="mini-avatars"><i>M</i><i>A</i><i>L</i><b>+2</b></div>
+          <div class="mini-lines"><span></span><span></span></div>
+          <div class="mini-progress"><span></span></div>
+        </div>
+        <span class="floating-star star-one">✦</span>
+        <span class="floating-star star-two">✧</span>
+      </div>
+    </div>
+    <div class="showcase-footer">Una mejor manera de construir juntos.</div>
+  </section>
+
+  <section class="auth-content">
+    <div class="auth-form-wrap">
+      <div class="mobile-brand">
+        <a class="brand" routerLink="/login"><span class="brand-mark">T</span><span>team<span class="brand-accent">sync</span></span></a>
+      </div>
+      <div class="auth-heading">
+        <span class="eyebrow">QUÉ BUENO VERTE</span>
+        <h2>Inicia sesión</h2>
+        <p>Continúa justo donde lo dejaste.</p>
+      </div>
+      @if (registered) {
+        <p class="success-message registration-success">Tu cuenta está lista. Inicia sesión para comenzar.</p>
+      }
+      <form class="form-stack" [formGroup]="form" (ngSubmit)="submit()">
+        <div class="field">
+          <label for="correo">Correo electrónico</label>
+          <input id="correo" type="email" formControlName="correo" autocomplete="email" placeholder="tu@equipo.com" />
+          @if (form.controls.correo.touched && form.controls.correo.invalid) {
+            <span class="field-error">Ingresa un correo válido.</span>
+          }
+        </div>
+        <div class="field">
+          <label for="contrasena">Contraseña</label>
+          <input id="contrasena" type="password" formControlName="contrasena" autocomplete="current-password" placeholder="Tu contraseña" />
+        </div>
+        @if (error()) {
+          <p class="error-message" role="alert">{{ error() }}</p>
+        }
+        <button class="button auth-submit" type="submit" [disabled]="submitting()">
+          {{ submitting() ? 'Entrando…' : 'Entrar a mi espacio' }} <span aria-hidden="true">→</span>
+        </button>
+      </form>
+      <p class="auth-switch">¿Aún no tienes cuenta? <a routerLink="/registro">Crea una gratis</a></p>
+    </div>
+    <span class="auth-note">Hecho para equipos que hacen su parte.</span>
+  </section>
+</main>
