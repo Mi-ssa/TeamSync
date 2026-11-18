@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { RouterLink, RouterOutlet } from '@angular/router';
+import { Router, RouterLink, RouterOutlet } from '@angular/router';
 import { AuthService } from './core/auth.service';
 
 @Component({
@@ -10,8 +10,5 @@ import { AuthService } from './core/auth.service';
 })
 export class App {
   readonly auth = inject(AuthService);
-
-  constructor() {
-    this.auth.restoreSession().subscribe();
-  }
+  readonly router = inject(Router);
 }

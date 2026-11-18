@@ -37,6 +37,23 @@ export class ProjectDetailComponent implements OnInit {
   readonly isLeader = computed(
     () => this.project()?.creado_por_id === this.auth.user()?.id,
   );
+  readonly totalPoints = computed(() =>
+    this.activityService.activities().reduce(
+      (total, activity) => total + activity.puntos_acordados,
+      0,
+    ),
+  );
+  readonly approvedPoints = computed(() =>
+    this.activityService
+      .activities()
+      .filter((activity) => activity.estado === 'completada')
+      .reduce((total, activity) => total + activity.puntos_acordados, 0),
+  );
+  readonly overallProgress = computed(() =>
+    this.totalPoints() > 0
+      ? Math.round((this.approvedPoints() / this.totalPoints()) * 100)
+      : 0,
+  );
   private projectId = 0;
 
   readonly inviteForm = this.fb.nonNullable.group({

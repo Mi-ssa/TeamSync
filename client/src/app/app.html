@@ -1,16 +1,18 @@
 <div class="app-frame">
   @if (auth.user(); as user) {
-    <header class="topbar">
-      <a class="brand" routerLink="/dashboard" aria-label="TeamSync, inicio">
-        <span class="brand-mark">T</span>
-        <span>team<span class="brand-accent">sync</span></span>
-      </a>
-      <div class="topbar-actions">
-        <a class="nav-link" routerLink="/dashboard">Mis proyectos</a>
-        <span class="user-chip"><span class="user-avatar">{{ user.nombre.charAt(0).toUpperCase() }}</span>{{ user.nombre }}</span>
-        <button class="button button-quiet button-small" type="button" (click)="auth.logout()">Salir</button>
-      </div>
-    </header>
+    @if (router.url.startsWith('/dashboard') || router.url.startsWith('/proyectos/')) {
+      <header class="topbar">
+        <a class="brand" routerLink="/dashboard" aria-label="TeamSync, inicio">
+          <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span>TeamSync</span>
+        </a>
+        <div class="topbar-actions">
+          <a class="nav-link" routerLink="/dashboard">Mis proyectos</a>
+          <span class="user-chip"><span class="user-avatar">{{ user.nombre.charAt(0).toUpperCase() }}</span>{{ user.nombre }}</span>
+          <button class="button button-quiet button-small" type="button" (click)="auth.logout()">Salir</button>
+        </div>
+      </header>
+    }
   }
   <router-outlet />
 </div>

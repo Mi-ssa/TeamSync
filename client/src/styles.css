@@ -1,21 +1,27 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
+@import './app/features/landing/landing.styles.css';
+@import './app/features/dashboard/dashboard.styles.css';
+@import './app/features/projects/project-detail.styles.css';
+@import './app/features/auth/auth.styles.css';
 
 :root {
   color-scheme: light;
-  --primary: #6254d9;
-  --primary-dark: #4d40bd;
-  --lavender: #eeecff;
-  --ink: #24233a;
-  --muted: #77778c;
-  --line: #e9e8f1;
-  --canvas: #f8f8fc;
-  --green: #258568;
-  --green-light: #e6f5ef;
-  --amber: #a76b13;
-  --amber-light: #fff3dc;
-  --red: #c24e5c;
-  --red-light: #fff0f1;
-  font-family: 'DM Sans', sans-serif;
+  --primary: #6758e8;
+  --primary-dark: #5546d7;
+  --navy: #17213b;
+  --navy-deep: #18223d;
+  --lavender: #ebe9ff;
+  --ink: #1e293b;
+  --muted: #64748b;
+  --line: #e2e8f0;
+  --canvas: #f5f7fb;
+  --mint: #10b981;
+  --green: #059669;
+  --green-light: #d1fae5;
+  --amber: #a16207;
+  --amber-light: #fff0d5;
+  --red: #b91c1c;
+  --red-light: #fee2e2;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   color: var(--ink);
   background: var(--canvas);
   font-synthesis: none;
@@ -55,7 +61,46 @@ p {
 h1,
 h2,
 h3 {
-  font-family: 'Manrope', sans-serif;
+  font-family: inherit;
+}
+
+.brand {
+  align-items: center;
+  color: var(--navy);
+  display: inline-flex;
+  font-size: 19px;
+  font-weight: 800;
+  gap: 10px;
+  letter-spacing: -0.5px;
+  text-decoration: none;
+}
+
+.brand-mark {
+  align-items: flex-end;
+  background: var(--navy-deep);
+  border-radius: 9px;
+  display: inline-flex;
+  gap: 3px;
+  height: 32px;
+  justify-content: center;
+  padding: 8px;
+  width: 32px;
+}
+
+.brand-mark i {
+  background: var(--mint);
+  border-radius: 2px;
+  display: block;
+  height: 8px;
+  width: 4px;
+}
+
+.brand-mark i:nth-child(2) {
+  height: 15px;
+}
+
+.brand-mark i:nth-child(3) {
+  height: 11px;
 }
 
 .page {
@@ -160,12 +205,12 @@ h3 {
 .card {
   background: white;
   border: 1px solid var(--line);
-  border-radius: 16px;
-  box-shadow: 0 5px 22px rgba(38, 34, 81, 0.035);
+  border-radius: 12px;
+  box-shadow: 0 5px 20px rgba(23, 33, 59, 0.035);
 }
 
 .panel {
-  padding: 24px;
+  padding: 19px;
 }
 
 .section-title {
@@ -206,7 +251,7 @@ h3 {
 }
 
 .field label {
-  color: #55546b;
+  color: #475569;
   font-size: 12px;
   font-weight: 700;
 }
@@ -215,7 +260,7 @@ h3 {
 .field textarea,
 .field select {
   background: #fff;
-  border: 1px solid #dfdeea;
+  border: 1px solid #dbe2ea;
   border-radius: 9px;
   color: var(--ink);
   font-size: 14px;
@@ -228,8 +273,8 @@ h3 {
 .field input:focus,
 .field textarea:focus,
 .field select:focus {
-  border-color: #9389ee;
-  box-shadow: 0 0 0 3px rgba(98, 84, 217, 0.11);
+  border-color: #897cf4;
+  box-shadow: 0 0 0 3px rgba(103, 88, 232, 0.12);
 }
 
 .field textarea {
@@ -300,7 +345,7 @@ h3 {
 
 .modal-backdrop {
   align-items: center;
-  background: rgba(27, 24, 55, 0.38);
+  background: rgba(15, 23, 42, 0.56);
   display: flex;
   inset: 0;
   justify-content: center;
@@ -312,9 +357,9 @@ h3 {
 .modal {
   background: white;
   border-radius: 17px;
-  box-shadow: 0 22px 80px rgba(24, 20, 67, 0.2);
-  max-width: 480px;
-  padding: 26px;
+  box-shadow: 0 22px 70px rgba(15, 23, 42, 0.22);
+  max-width: 460px;
+  padding: 22px;
   width: 100%;
 }
 
@@ -368,13 +413,26 @@ h3 {
 }
 
 .status-progress {
-  background: #eaf0ff;
-  color: #4760af;
+  background: var(--lavender);
+  color: var(--primary-dark);
 }
 
 .status-approved {
   background: var(--green-light);
   color: var(--green);
+}
+
+a {
+  color: inherit;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 3px solid rgba(103, 88, 232, 0.35);
+  outline-offset: 2px;
 }
 
 @media (max-width: 700px) {

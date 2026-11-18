@@ -1,14 +1,37 @@
 <main class="page project-detail-page">
-  <a class="back-link" routerLink="/dashboard"><span aria-hidden="true">←</span> Volver a mis proyectos</a>
+  <div class="project-shell">
+    <aside class="project-sidebar" aria-label="Navegación del proyecto">
+      <a class="sidebar-brand" routerLink="/dashboard" aria-label="TeamSync, mis proyectos">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span>TeamSync</span>
+      </a>
+      @if (project(); as navProject) {
+        <div class="sidebar-project">
+          <span class="sidebar-project-mark">{{ navProject.nombre.charAt(0).toUpperCase() }}</span>
+          <span><small>PROYECTO</small><b>{{ navProject.nombre }}</b></span>
+        </div>
+      }
+      <nav class="project-nav">
+        <a href="#project-overview"><span aria-hidden="true">⌂</span> Resumen</a>
+        <a href="#activities"><span aria-hidden="true">☷</span> Actividades</a>
+        <a href="#members"><span aria-hidden="true">♧</span> Integrantes</a>
+        <button type="button" disabled aria-describedby="iteration-two-note">
+          <span aria-hidden="true">▥</span> Contribuciones / Cierre de fase
+        </button>
+        <small id="iteration-two-note">Disponible en Iteración 2</small>
+      </nav>
+      <a class="sidebar-back" routerLink="/dashboard"><span aria-hidden="true">←</span> Mis proyectos</a>
+    </aside>
+    <div class="project-content">
 
-  @if (error()) {
-    <p class="error-message detail-error" role="alert">{{ error() }}</p>
-  }
+      @if (error()) {
+        <p class="error-message detail-error" role="alert">{{ error() }}</p>
+      }
 
-  @if (loading()) {
-    <div class="loading-state"><span class="spinner"></span> Cargando proyecto…</div>
-  } @else if (project(); as currentProject) {
-    <section class="project-hero">
+      @if (loading()) {
+        <div class="loading-state"><span class="spinner"></span> Cargando proyecto…</div>
+      } @else if (project(); as currentProject) {
+    <section class="project-hero" id="project-overview">
       <div class="project-hero-icon">{{ currentProject.nombre.charAt(0).toUpperCase() }}</div>
       <div class="project-hero-copy">
         <div class="project-label">
@@ -26,8 +49,26 @@
       </div>
     </section>
 
+    <section class="project-progress panel" aria-label="Progreso general del proyecto">
+      <div class="progress-heading">
+        <div><span class="eyebrow">PROGRESO VALIDADO</span><h2>Avance del proyecto</h2></div>
+        <strong>{{ overallProgress() }}%</strong>
+      </div>
+      <div
+        class="progress-track"
+        role="progressbar"
+        aria-label="Puntos aprobados del proyecto"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        [attr.aria-valuenow]="overallProgress()"
+      >
+        <span [style.width.%]="overallProgress()"></span>
+      </div>
+      <p>{{ approvedPoints() }} de {{ totalPoints() }} puntos aprobados</p>
+    </section>
+
     <div class="project-layout">
-      <section class="activities-column">
+      <section class="activities-column" id="activities">
         <div class="section-header">
           <div>
             <span class="eyebrow">PLAN DE TRABAJO</span>
@@ -171,7 +212,7 @@
         }
       </section>
 
-      <aside class="team-column">
+      <aside class="team-column" id="members">
         <section class="panel team-panel">
           <div class="section-title team-title">
             <div>
@@ -220,4 +261,6 @@
       </aside>
     </div>
   }
+    </div>
+  </div>
 </main>
