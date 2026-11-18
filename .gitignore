@@ -9,3 +9,6 @@ server/__pycache__/
 client/node_modules/
 client/dist/
 client/.angular/
+
+#referencia de figma para el diseño de la app
+figma-reference/
