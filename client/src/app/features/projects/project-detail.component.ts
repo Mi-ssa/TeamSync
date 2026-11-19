@@ -34,6 +34,9 @@ export class ProjectDetailComponent implements OnInit {
   readonly activeAdvanceActivity = signal<number | null>(null);
   readonly sendingAdvance = signal(false);
   readonly reviewingAdvance = signal<number | null>(null);
+  readonly rejectingAdvance = signal<number | null>(null);
+  readonly rejectComment = signal('');
+  readonly rejectError = signal('');
   readonly isLeader = computed(
     () => this.project()?.creado_por_id === this.auth.user()?.id,
   );
@@ -221,14 +224,41 @@ export class ProjectDetailComponent implements OnInit {
       });
   }
 
-  review(progress: Progress, activityId: number, estado: 'aprobado' | 'rechazado'): void {
+  review(
+    progress: Progress,
+    activityId: number,
+    estado: 'aprobado' | 'rechazado',
+    comentario: string | null = null,
+  ): void {
     this.reviewingAdvance.set(progress.id);
     this.activityService
-      .reviewAdvance(progress.id, activityId, estado)
+      .reviewAdvance(progress.id, activityId, estado, comentario)
       .pipe(finalize(() => this.reviewingAdvance.set(null)))
       .subscribe({
+        next: () => this.cancelReject(),
         error: (error: unknown) =>
           this.error.set(apiErrorMessage(error, 'No se pudo revisar el avance.')),
       });
+  }
+
+  startReject(progress: Progress): void {
+    this.rejectingAdvance.set(progress.id);
+    this.rejectComment.set('');
+    this.rejectError.set('');
+  }
+
+  cancelReject(): void {
+    this.rejectingAdvance.set(null);
+    this.rejectComment.set('');
+    this.rejectError.set('');
+  }
+
+  confirmReject(progress: Progress, activityId: number): void {
+    const comentario = this.rejectComment().trim();
+    if (!comentario) {
+      this.rejectError.set('Explica qué debe corregir el integrante.');
+      return;
+    }
+    this.review(progress, activityId, 'rechazado', comentario);
   }
 }

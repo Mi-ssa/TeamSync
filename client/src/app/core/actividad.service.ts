@@ -51,9 +51,14 @@ export class ActividadService {
       );
   }
 
-  reviewAdvance(id: number, activityId: number, estado: 'aprobado' | 'rechazado'): Observable<Progress> {
+  reviewAdvance(
+    id: number,
+    activityId: number,
+    estado: 'aprobado' | 'rechazado',
+    comentario: string | null = null,
+  ): Observable<Progress> {
     return this.http
-      .patch<Progress>(`${API_URL}/avances/${id}/revisar`, { estado })
+      .patch<Progress>(`${API_URL}/avances/${id}/revisar`, { estado, comentario })
       .pipe(
         tap((updated) => {
           const current = this.advances()[activityId] ?? [];

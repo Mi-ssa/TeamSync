@@ -157,15 +157,35 @@
                           <a class="evidence-link" [href]="progress.url_evidencia" target="_blank" rel="noopener noreferrer">↗ Ver evidencia</a>
                         }
                         @if (isLeader() && progress.estado === 'pendiente') {
-                          <div class="review-actions">
-                            <span>¿Validar este avance?</span>
-                            <button class="button button-danger button-small" type="button" [disabled]="reviewingAdvance() === progress.id" (click)="review(progress, activity.id, 'rechazado')">Rechazar</button>
-                            <button class="button button-small" type="button" [disabled]="reviewingAdvance() === progress.id" (click)="review(progress, activity.id, 'aprobado')">Aprobar avance</button>
-                          </div>
+                          @if (rejectingAdvance() === progress.id) {
+                            <div class="reject-form">
+                              <div class="field">
+                                <label [for]="'reject-comment-' + progress.id">¿Qué debe corregir?</label>
+                                <textarea [id]="'reject-comment-' + progress.id" maxlength="1000" placeholder="Explica por qué rechazas el avance…" [value]="rejectComment()" (input)="rejectComment.set($any($event.target).value)"></textarea>
+                                @if (rejectError()) {
+                                  <span class="field-error">{{ rejectError() }}</span>
+                                }
+                              </div>
+                              <div class="review-actions">
+                                <span></span>
+                                <button class="button button-secondary button-small" type="button" [disabled]="reviewingAdvance() === progress.id" (click)="cancelReject()">Cancelar</button>
+                                <button class="button button-danger button-small" type="button" [disabled]="reviewingAdvance() === progress.id" (click)="confirmReject(progress, activity.id)">Enviar rechazo</button>
+                              </div>
+                            </div>
+                          } @else {
+                            <div class="review-actions">
+                              <span>¿Validar este avance?</span>
+                              <button class="button button-danger button-small" type="button" [disabled]="reviewingAdvance() === progress.id" (click)="startReject(progress)">Rechazar</button>
+                              <button class="button button-small" type="button" [disabled]="reviewingAdvance() === progress.id" (click)="review(progress, activity.id, 'aprobado')">Aprobar avance</button>
+                            </div>
+                          }
                         } @else if (progress.estado !== 'pendiente') {
                           <span class="progress-result" [class]="progress.estado === 'aprobado' ? 'progress-result approved' : 'progress-result rejected'">
                             {{ progress.estado === 'aprobado' ? 'Avance aprobado' : 'Avance rechazado' }}
                           </span>
+                          @if (progress.comentario_revision) {
+                            <p class="review-comment"><strong>Comentario del líder:</strong> {{ progress.comentario_revision }}</p>
+                          }
                         }
                       </div>
                     }
