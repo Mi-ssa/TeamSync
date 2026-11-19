@@ -64,7 +64,12 @@ def revisar_avance(
     if avance.estado != "pendiente":
         raise HTTPException(status_code=409, detail="El avance ya fue revisado")
 
+    comentario = (payload.comentario or "").strip() or None
+    if payload.estado == "rechazado" and comentario is None:
+        raise HTTPException(status_code=400, detail="Escribe un comentario para explicar el rechazo")
+
     avance.estado = payload.estado
+    avance.comentario_revision = comentario
     avance.revisado_en = datetime.now(timezone.utc)
     if payload.estado == "aprobado":
         actividad.estado = "completada"

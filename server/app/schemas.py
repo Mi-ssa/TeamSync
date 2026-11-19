@@ -136,6 +136,7 @@ class AvanceCreate(SQLModel):
 
 class AvanceDecision(SQLModel):
     estado: Literal["aprobado", "rechazado"]
+    comentario: str | None = Field(default=None, max_length=1000)
 
 
 class AvancePublic(SQLModel):
@@ -145,6 +146,7 @@ class AvancePublic(SQLModel):
     descripcion: str
     url_evidencia: str | None
     estado: str
+    comentario_revision: str | None
     creado_en: str
     revisado_en: str | None
 
@@ -157,6 +159,7 @@ class AvancePublic(SQLModel):
             descripcion=avance.descripcion,
             url_evidencia=avance.url_evidencia,
             estado=avance.estado,
+            comentario_revision=avance.comentario_revision,
             creado_en=avance.creado_en.isoformat(),
             revisado_en=avance.revisado_en.isoformat() if avance.revisado_en else None,
         )

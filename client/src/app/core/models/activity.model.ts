@@ -16,6 +16,7 @@ export interface Progress {
   descripcion: string;
   url_evidencia: string | null;
   estado: 'pendiente' | 'aprobado' | 'rechazado';
+  comentario_revision: string | null;
   creado_en: string;
   revisado_en: string | null;
 }
