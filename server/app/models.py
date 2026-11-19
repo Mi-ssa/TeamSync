@@ -51,6 +51,7 @@ class Avance(SQLModel, table=True):
     descripcion: str
     url_evidencia: str | None = None
     estado: str = "pendiente"
+    comentario_revision: str | None = None
     creado_en: datetime = Field(default_factory=utc_now)
     revisado_en: datetime | None = None
 

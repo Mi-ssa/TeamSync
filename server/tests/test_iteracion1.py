@@ -169,3 +169,49 @@ def test_activity_progress_and_leader_approval(client: TestClient):
     assert review_response.status_code == 200
     assert review_response.json()["estado"] == "aprobado"
     assert client.get(f"/proyectos/{project_id}/actividades", headers=leader_headers).json()[0]["estado"] == "completada"
+
+
+def test_rechazar_avance_requiere_comentario(client: TestClient):
+    member = register(client, "Integrante", "integrante@example.com")
+    register(client, "Líder", "lider@example.com")
+    leader_headers = login(client, "lider@example.com")
+    member_headers = login(client, "integrante@example.com")
+    project_id = client.post("/proyectos", json={"nombre": "Proyecto"}, headers=leader_headers).json()["id"]
+    invitation = client.post(
+        f"/proyectos/{project_id}/invitaciones",
+        json={"correo": member["correo"]},
+        headers=leader_headers,
+    ).json()
+    client.post(
+        f"/invitaciones/{invitation['id']}/responder",
+        json={"respuesta": "aceptar"},
+        headers=member_headers,
+    )
+    activity_id = client.post(
+        f"/proyectos/{project_id}/actividades",
+        json={"nombre": "Diseñar prototipo", "puntos_acordados": 5, "responsable_id": member["id"]},
+        headers=leader_headers,
+    ).json()["id"]
+    progress_id = client.post(
+        f"/actividades/{activity_id}/avances",
+        json={"descripcion": "Prototipo terminado"},
+        headers=member_headers,
+    ).json()["id"]
+
+    sin_comentario = client.patch(
+        f"/avances/{progress_id}/revisar",
+        json={"estado": "rechazado", "comentario": "   "},
+        headers=leader_headers,
+    )
+    assert sin_comentario.status_code == 400
+
+    rechazo = client.patch(
+        f"/avances/{progress_id}/revisar",
+        json={"estado": "rechazado", "comentario": "Falta la pantalla de inicio"},
+        headers=leader_headers,
+    )
+    assert rechazo.status_code == 200
+    assert rechazo.json()["estado"] == "rechazado"
+    assert rechazo.json()["comentario_revision"] == "Falta la pantalla de inicio"
+    actividad = client.get(f"/proyectos/{project_id}/actividades", headers=leader_headers).json()[0]
+    assert actividad["estado"] == "pendiente"
