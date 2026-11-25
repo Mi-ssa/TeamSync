@@ -1,0 +1,447 @@
+/* Iteración 2: votación de puntos, contribuciones, check-in, declaración y administración. */
+
+.sr-only {
+  border: 0;
+  clip: rect(0 0 0 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+.status-rejected {
+  background: var(--red-light);
+  color: var(--red);
+}
+
+.phase-badge {
+  background: var(--amber-light);
+  border-radius: 99px;
+  color: var(--amber);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 9px;
+}
+
+.phase-badge.phase-done {
+  background: var(--green-light);
+  color: var(--green);
+}
+
+/* Votación en la tarjeta de actividad */
+.vote-box {
+  background: #f7f6ff;
+  border: 1px dashed #d7d2ff;
+  border-radius: 10px;
+  margin-top: 12px;
+  padding: 11px 12px;
+}
+
+.vote-box p {
+  color: #55546b;
+  font-size: 11px;
+  line-height: 1.5;
+  margin: 0 0 9px;
+}
+
+.vote-box p strong {
+  color: var(--ink);
+  display: block;
+}
+
+.vote-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.vote-actions input {
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  font: inherit;
+  font-size: 13px;
+  min-height: 36px;
+  padding: 6px 10px;
+  width: 90px;
+}
+
+/* Panel de contribuciones */
+.contribution-panel {
+  display: grid;
+  gap: 16px;
+  margin-top: 22px;
+  scroll-margin-top: 20px;
+}
+
+.contribution-panel .section-header {
+  margin-bottom: 0;
+}
+
+.contribution-message {
+  background: var(--green-light);
+  border-radius: 9px;
+  color: var(--green);
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0;
+  padding: 10px 13px;
+}
+
+.private-notice {
+  background: var(--amber-light);
+  border: 1px solid #f6dfb3;
+  border-radius: 10px;
+  color: #7c4a03;
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0;
+  padding: 11px 13px;
+}
+
+.fair-share-chips {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.fair-share-chips span,
+.admin-stats > div {
+  background: var(--canvas);
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  display: grid;
+  gap: 3px;
+  padding: 11px 13px;
+}
+
+.fair-share-chips small,
+.admin-stats small {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.fair-share-chips b,
+.admin-stats b {
+  font-size: 20px;
+  letter-spacing: -0.4px;
+}
+
+.contribution-table-wrap {
+  overflow-x: auto;
+}
+
+.contribution-table {
+  border-collapse: collapse;
+  font-size: 12px;
+  width: 100%;
+}
+
+.contribution-table th,
+.contribution-table td {
+  border-bottom: 1px solid var(--line);
+  padding: 10px 8px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.contribution-table thead th {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+.contribution-table tbody th {
+  font-weight: 700;
+}
+
+.contribution-table td small {
+  color: var(--muted);
+}
+
+.contribution-table .leader-label {
+  margin-left: 6px;
+}
+
+.share-bar {
+  background: #eef0f6;
+  border-radius: 99px;
+  display: inline-block;
+  height: 8px;
+  position: relative;
+  vertical-align: middle;
+  width: 110px;
+}
+
+.share-bar span {
+  background: #f59e0b;
+  border-radius: 99px;
+  display: block;
+  height: 100%;
+}
+
+.share-bar.share-ok span {
+  background: var(--mint);
+}
+
+.share-bar i {
+  background: var(--navy);
+  height: 14px;
+  position: absolute;
+  top: -3px;
+  width: 2px;
+}
+
+.share-value {
+  color: var(--amber);
+  margin-left: 8px;
+}
+
+.share-value.share-ok {
+  color: var(--green);
+}
+
+.peer-score {
+  color: var(--muted);
+  display: block;
+  margin-top: 4px;
+}
+
+.contribution-hint {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Check-in entre pares */
+.check-in {
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 10px;
+  padding-top: 14px;
+}
+
+.check-in-heading {
+  align-items: baseline;
+  display: flex;
+  justify-content: space-between;
+}
+
+.check-in-heading h3 {
+  font-size: 15px;
+  margin: 0;
+}
+
+.check-in-heading span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.check-in-row {
+  align-items: center;
+  background: var(--canvas);
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  display: grid;
+  gap: 10px 14px;
+  grid-template-columns: minmax(130px, 1fr) auto;
+  padding: 12px;
+}
+
+.check-in-person {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
+.check-in-scores {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.check-in-scores label {
+  color: var(--muted);
+  display: grid;
+  font-size: 10px;
+  font-weight: 700;
+  gap: 3px;
+}
+
+.check-in-scores select,
+.check-in-comment {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 12px;
+  padding: 6px 8px;
+}
+
+.check-in-confirm {
+  align-items: flex-start;
+  color: #55546b;
+  display: flex;
+  font-size: 11px;
+  gap: 7px;
+  grid-column: 1 / -1;
+  line-height: 1.4;
+}
+
+.check-in-comment {
+  min-height: 36px;
+}
+
+/* Cierre de fase */
+.phase-close {
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 12px;
+  padding-top: 14px;
+}
+
+.phase-blockers {
+  background: #fff8ec;
+  border-radius: 10px;
+  color: #7c4a03;
+  font-size: 12px;
+  padding: 11px 13px;
+}
+
+.phase-blockers ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+}
+
+.phase-ready {
+  color: var(--green);
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.phase-actions,
+.confirm-box {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.confirm-box {
+  background: var(--lavender);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.confirm-box span {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Declaración */
+.declaration {
+  border: 1px solid #cdeee0;
+  border-radius: 12px;
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+}
+
+.declaration-heading {
+  align-items: flex-start;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.declaration-heading h3 {
+  font-size: 17px;
+  margin: 0 0 4px;
+}
+
+.declaration-heading p,
+.declaration-sign p {
+  color: var(--muted);
+  font-size: 12px;
+  margin: 0;
+}
+
+.declaration-sign {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.declaration-blocked {
+  color: var(--red) !important;
+  font-weight: 700;
+}
+
+/* Administración */
+.admin-page {
+  display: grid;
+  gap: 18px;
+  margin: 0 auto;
+  max-width: 1160px;
+  padding: 28px 24px 60px;
+}
+
+.admin-header h1 {
+  font-size: 28px;
+  letter-spacing: -0.6px;
+  margin: 0 0 6px;
+}
+
+.admin-header p {
+  color: var(--muted);
+  margin: 0;
+}
+
+.admin-stats {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.admin-grid {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: minmax(260px, 1fr) 2fr;
+}
+
+.admin-section h2 {
+  font-size: 17px;
+  margin: 0 0 14px;
+}
+
+@media (max-width: 860px) {
+  .fair-share-chips,
+  .admin-stats,
+  .admin-grid,
+  .check-in-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media print {
+  .topbar,
+  .project-sidebar,
+  .project-hero,
+  .project-progress,
+  .project-layout,
+  .contribution-panel > :not(.declaration),
+  .declaration-heading button,
+  .declaration-sign button {
+    display: none !important;
+  }
+}

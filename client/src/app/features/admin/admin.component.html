@@ -1,0 +1,111 @@
+<main class="page admin-page">
+  <header class="admin-header">
+    <span class="eyebrow">ADMINISTRACIÓN</span>
+    <h1>Panel del administrador</h1>
+    <p>Gestiona usuarios, define los parámetros de contribución y consulta reportes de los proyectos.</p>
+  </header>
+
+  @if (error()) {
+    <p class="error-message" role="alert">{{ error() }}</p>
+  }
+
+  @if (loading()) {
+    <div class="loading-state"><span class="spinner"></span> Cargando panel…</div>
+  } @else {
+    @if (report(); as data) {
+      <section class="admin-stats" aria-label="Resumen">
+        <div class="panel"><small>Usuarios activos</small><b>{{ data.usuarios_activos }}/{{ data.usuarios }}</b></div>
+        <div class="panel"><small>Proyectos</small><b>{{ data.proyectos }}</b></div>
+        <div class="panel"><small>Concluidos</small><b>{{ data.proyectos_concluidos }}</b></div>
+        <div class="panel"><small>Mínimo de parte justa</small><b>{{ data.porcentaje_minimo }}%</b></div>
+      </section>
+    }
+
+    <div class="admin-grid">
+      <section class="panel admin-section" aria-labelledby="settings-title">
+        <h2 id="settings-title">Parámetros</h2>
+        <form class="form-stack" [formGroup]="settingsForm" (ngSubmit)="saveSettings()">
+          <div class="field">
+            <label for="min-percent">Porcentaje mínimo de la parte justa para cerrar una fase</label>
+            <input id="min-percent" type="number" min="0" max="100" formControlName="porcentaje_minimo" />
+          </div>
+          <div class="field">
+            <label for="inactive-days">Días sin avances para marcar a alguien como inactivo</label>
+            <input id="inactive-days" type="number" min="1" max="365" formControlName="dias_inactividad" />
+          </div>
+          @if (settingsForm.touched && settingsForm.invalid) {
+            <p class="field-error">El porcentaje va de 0 a 100 y los días de 1 a 365.</p>
+          }
+          @if (message()) {
+            <p class="contribution-message" role="status">{{ message() }}</p>
+          }
+          <button class="button" type="submit" [disabled]="saving()">{{ saving() ? 'Guardando…' : 'Guardar parámetros' }}</button>
+        </form>
+      </section>
+
+      <section class="panel admin-section" aria-labelledby="users-title">
+        <h2 id="users-title">Usuarios <span class="section-count">{{ users().length }}</span></h2>
+        <div class="contribution-table-wrap">
+          <table class="contribution-table">
+            <thead>
+              <tr><th scope="col">Nombre</th><th scope="col">Correo</th><th scope="col">Estado</th><th scope="col">Rol</th></tr>
+            </thead>
+            <tbody>
+              @for (user of users(); track user.id) {
+                <tr>
+                  <th scope="row">{{ user.nombre }}{{ user.id === auth.user()?.id ? ' (tú)' : '' }}</th>
+                  <td>{{ user.correo }}</td>
+                  <td>
+                    <button class="button button-small" [class.button-secondary]="user.activo" [class.button-danger]="!user.activo" type="button" [disabled]="updatingUser() === user.id || user.id === auth.user()?.id" (click)="toggle(user, 'activo')">
+                      {{ user.activo ? 'Activo · desactivar' : 'Inactivo · activar' }}
+                    </button>
+                  </td>
+                  <td>
+                    <button class="button button-secondary button-small" type="button" [disabled]="updatingUser() === user.id || user.id === auth.user()?.id" (click)="toggle(user, 'es_admin')">
+                      {{ user.es_admin ? 'Admin · quitar' : 'Usuario · hacer admin' }}
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    @if (report(); as data) {
+      <section class="panel admin-section" aria-labelledby="report-title">
+        <h2 id="report-title">Reporte de proyectos</h2>
+        @if (data.detalle.length) {
+          <div class="contribution-table-wrap">
+            <table class="contribution-table">
+              <thead>
+                <tr>
+                  <th scope="col">Proyecto</th><th scope="col">Líder</th><th scope="col">Estado</th>
+                  <th scope="col">Integrantes</th><th scope="col">Actividades</th><th scope="col">Puntos validados</th>
+                  <th scope="col">Bajo el mínimo</th><th scope="col">Inactivos ({{ data.dias_inactividad }} días)</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of data.detalle; track row.id) {
+                  <tr>
+                    <th scope="row">{{ row.nombre }}</th>
+                    <td>{{ row.lider }}</td>
+                    <td>{{ row.estado === 'concluido' ? 'Concluido' : 'Fase ' + row.fase_actual }}</td>
+                    <td>{{ row.integrantes }}</td>
+                    <td>{{ row.actividades_completadas }}/{{ row.actividades }}</td>
+                    <td>{{ row.puntos_validados }} de {{ row.puntos_totales }}</td>
+                    <td><span class="status" [class.status-pending]="row.integrantes_bajo_minimo > 0" [class.status-approved]="row.integrantes_bajo_minimo === 0">{{ row.integrantes_bajo_minimo }}</span></td>
+                    <td><span class="status" [class.status-pending]="row.integrantes_inactivos > 0" [class.status-approved]="row.integrantes_inactivos === 0">{{ row.integrantes_inactivos }}</span></td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <p class="contribution-hint">Todavía no hay proyectos.</p>
+        }
+      </section>
+    }
+  }
+</main>

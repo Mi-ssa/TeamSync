@@ -3,6 +3,8 @@ export interface Project {
   nombre: string;
   descripcion: string | null;
   creado_por_id: number;
+  fase_actual: number;
+  estado: 'activo' | 'concluido';
   creado_en: string;
 }
 

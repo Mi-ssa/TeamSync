@@ -12,13 +12,10 @@
         </div>
       }
       <nav class="project-nav">
-        <a href="#project-overview"><span aria-hidden="true">⌂</span> Resumen</a>
-        <a href="#activities"><span aria-hidden="true">☷</span> Actividades</a>
-        <a href="#members"><span aria-hidden="true">♧</span> Integrantes</a>
-        <button type="button" disabled aria-describedby="iteration-two-note">
-          <span aria-hidden="true">▥</span> Contribuciones / Cierre de fase
-        </button>
-        <small id="iteration-two-note">Disponible en Iteración 2</small>
+        <a href="#project-overview" (click)="scrollTo('project-overview', $event)"><span aria-hidden="true">⌂</span> Resumen</a>
+        <a href="#activities" (click)="scrollTo('activities', $event)"><span aria-hidden="true">☷</span> Actividades</a>
+        <a href="#members" (click)="scrollTo('members', $event)"><span aria-hidden="true">♧</span> Integrantes</a>
+        <a href="#contribuciones" (click)="scrollTo('contribuciones', $event)"><span aria-hidden="true">▥</span> Contribuciones / Cierre de fase</a>
       </nav>
       <a class="sidebar-back" routerLink="/dashboard"><span aria-hidden="true">←</span> Mis proyectos</a>
     </aside>
@@ -38,6 +35,11 @@
           <span class="eyebrow">ESPACIO DE COLABORACIÓN</span>
           @if (isLeader()) {
             <span class="role-badge">✦ Líder</span>
+          }
+          @if (concluded()) {
+            <span class="phase-badge phase-done">✓ Concluido</span>
+          } @else {
+            <span class="phase-badge">Fase {{ currentProject.fase_actual }}</span>
           }
         </div>
         <h1>{{ currentProject.nombre }}</h1>
@@ -74,7 +76,7 @@
             <span class="eyebrow">PLAN DE TRABAJO</span>
             <h2>Actividades <span class="section-count">{{ activityService.activities().length }}</span></h2>
           </div>
-          @if (isLeader()) {
+          @if (isLeader() && !concluded()) {
             <button class="button button-secondary" type="button" (click)="toggleActivityForm()">
               <span class="plus">+</span> Nueva actividad
             </button>
@@ -86,7 +88,7 @@
             <div class="section-title">
               <div>
                 <h2>Definir una actividad</h2>
-                <p>Asigna una persona responsable y acuerden los puntos.</p>
+                <p>Asigna una persona responsable y propone los puntos; el equipo vota y se acuerda la mediana.</p>
               </div>
               <button class="modal-close" type="button" aria-label="Cerrar formulario" (click)="showActivityForm.set(false)">×</button>
             </div>
@@ -101,7 +103,7 @@
               </div>
               <div class="activity-form-row">
                 <div class="field">
-                  <label for="activity-points">Puntos acordados</label>
+                  <label for="activity-points">Puntos propuestos (tu voto)</label>
                   <input id="activity-points" type="number" min="0" step="0.5" formControlName="puntos_acordados" />
                 </div>
                 <div class="field">
@@ -130,7 +132,7 @@
             @for (activity of activityService.activities(); track activity.id) {
               <article class="activity-card panel">
                 <div class="activity-card-top">
-                  <span class="activity-number">T{{ activity.id.toString().padStart(2, '0') }}</span>
+                  <span class="activity-number">T{{ activity.id.toString().padStart(2, '0') }} · FASE {{ activity.fase }}</span>
                   <span class="status {{ statusClass(activity) }}">{{ status(activity) }}</span>
                 </div>
                 <div class="activity-main">
@@ -140,9 +142,31 @@
                   }
                   <div class="activity-meta">
                     <span class="assignee"><span class="assignee-avatar">{{ memberName(activity.responsable_id).charAt(0).toUpperCase() }}</span>{{ memberName(activity.responsable_id) }}</span>
-                    <span class="points"><span aria-hidden="true">✦</span> {{ activity.puntos_acordados }} puntos</span>
+                    @if (activity.estado === 'votacion') {
+                      <span class="points"><span aria-hidden="true">✦</span> {{ activity.votos_emitidos }}/{{ activity.votos_requeridos }} votos</span>
+                    } @else {
+                      <span class="points"><span aria-hidden="true">✦</span> {{ activity.puntos_acordados }} puntos acordados</span>
+                    }
                   </div>
                 </div>
+
+                @if (activity.estado === 'votacion') {
+                  <div class="vote-box">
+                    <p>
+                      <strong>¿Cuántos puntos vale esta actividad?</strong>
+                      Se acuerda la mediana cuando vota todo el equipo{{ isLeader() ? ', o cuando cierres la votación con mayoría' : '' }}.
+                      @if (activity.mi_voto !== null) { Tu voto: <b>{{ activity.mi_voto }}</b>. }
+                    </p>
+                    <div class="vote-actions">
+                      <label class="sr-only" [for]="'vote-' + activity.id">Puntos</label>
+                      <input [id]="'vote-' + activity.id" type="number" min="0" step="0.5" [value]="voteValue(activity)" (input)="setVote(activity, $any($event.target).value)" />
+                      <button class="button button-small" type="button" [disabled]="voting() === activity.id" (click)="vote(activity)">{{ activity.mi_voto !== null ? 'Cambiar voto' : 'Votar' }}</button>
+                      @if (isLeader()) {
+                        <button class="button button-secondary button-small" type="button" [disabled]="voting() === activity.id || activity.votos_emitidos * 2 <= activity.votos_requeridos" (click)="closeVote(activity)">Cerrar votación</button>
+                      }
+                    </div>
+                  </div>
+                }
 
                 @if (activityService.advances()[activity.id]?.length) {
                   <div class="progress-list">
@@ -156,7 +180,7 @@
                         @if (progress.url_evidencia) {
                           <a class="evidence-link" [href]="progress.url_evidencia" target="_blank" rel="noopener noreferrer">↗ Ver evidencia</a>
                         }
-                        @if (isLeader() && progress.estado === 'pendiente') {
+                        @if (canReview(progress)) {
                           @if (rejectingAdvance() === progress.id) {
                             <div class="reject-form">
                               <div class="field">
@@ -179,12 +203,14 @@
                               <button class="button button-small" type="button" [disabled]="reviewingAdvance() === progress.id" (click)="review(progress, activity.id, 'aprobado')">Aprobar avance</button>
                             </div>
                           }
-                        } @else if (progress.estado !== 'pendiente') {
+                        } @else if (progress.estado === 'pendiente') {
+                          <span class="progress-result">{{ progress.usuario_id === auth.user()?.id ? 'Esperando revisión' + (isLeader() ? ' de otro integrante' : ' del líder') : 'Esperando revisión' }}</span>
+                        } @else {
                           <span class="progress-result" [class]="progress.estado === 'aprobado' ? 'progress-result approved' : 'progress-result rejected'">
                             {{ progress.estado === 'aprobado' ? 'Avance aprobado' : 'Avance rechazado' }}
                           </span>
                           @if (progress.comentario_revision) {
-                            <p class="review-comment"><strong>Comentario del líder:</strong> {{ progress.comentario_revision }}</p>
+                            <p class="review-comment"><strong>Comentario de la revisión:</strong> {{ progress.comentario_revision }}</p>
                           }
                         }
                       </div>
@@ -276,10 +302,18 @@
         </section>
         <div class="team-tip">
           <span class="tip-icon">✦</span>
-          <p>Los puntos se acuerdan antes de empezar. Así cada contribución queda clara para todo el equipo.</p>
+          <p>Los puntos se votan antes de empezar y al cerrar cada fase hacen un check-in entre pares. Así cada contribución queda clara para todo el equipo.</p>
         </div>
       </aside>
     </div>
+
+    <app-contribution-panel
+      [project]="currentProject"
+      [members]="members()"
+      [isLeader]="isLeader()"
+      [refresh]="refreshContribution()"
+      (projectChanged)="onProjectChanged($event)"
+    />
   }
     </div>
   </div>

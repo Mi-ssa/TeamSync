@@ -9,11 +9,12 @@ import { AuthService } from '../../core/auth.service';
 import { Activity, Progress } from '../../core/models/activity.model';
 import { Project, ProjectMember } from '../../core/models/project.model';
 import { ProyectoService } from '../../core/proyecto.service';
+import { ContributionPanelComponent } from './contribution-panel.component';
 
 @Component({
   selector: 'app-project-detail',
   standalone: true,
-  imports: [DatePipe, ReactiveFormsModule, RouterLink],
+  imports: [DatePipe, ReactiveFormsModule, RouterLink, ContributionPanelComponent],
   templateUrl: './project-detail.component.html',
   styleUrl: './project-detail.component.css',
 })
@@ -37,11 +38,21 @@ export class ProjectDetailComponent implements OnInit {
   readonly rejectingAdvance = signal<number | null>(null);
   readonly rejectComment = signal('');
   readonly rejectError = signal('');
+  readonly voteDrafts = signal<Record<number, number>>({});
+  readonly voting = signal<number | null>(null);
+  readonly refreshContribution = signal(0);
   readonly isLeader = computed(
     () => this.project()?.creado_por_id === this.auth.user()?.id,
   );
+  readonly leaderId = computed(
+    () => this.members().find((member) => member.rol === 'lider')?.id ?? this.project()?.creado_por_id,
+  );
+  readonly concluded = computed(() => this.project()?.estado === 'concluido');
   readonly totalPoints = computed(() =>
-    this.activityService.activities().reduce(
+    this.activityService
+      .activities()
+      .filter((activity) => activity.estado !== 'votacion')
+      .reduce(
       (total, activity) => total + activity.puntos_acordados,
       0,
     ),
@@ -108,6 +119,12 @@ export class ProjectDetailComponent implements OnInit {
       });
   }
 
+  /** Desplaza a una sección sin que el <base href> mande a otra ruta. */
+  scrollTo(id: string, event: Event): void {
+    event.preventDefault();
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
   memberName(id: number): string {
     return this.members().find((member) => member.id === id)?.nombre ?? 'Integrante';
   }
@@ -124,7 +141,7 @@ export class ProjectDetailComponent implements OnInit {
     const status = this.status(activity);
     return status === 'aprobada'
       ? 'status-approved'
-      : status === 'en_revision'
+      : status === 'en_revision' || status === 'en votación'
         ? 'status-progress'
         : 'status-pending';
   }
@@ -132,11 +149,60 @@ export class ProjectDetailComponent implements OnInit {
   canSubmitAdvance(activity: Activity): boolean {
     return (
       activity.responsable_id === this.auth.user()?.id &&
-      this.status(activity) !== 'aprobada' &&
+      !this.concluded() &&
+      activity.estado === 'pendiente' &&
+      activity.fase === this.project()?.fase_actual &&
       !(this.activityService.advances()[activity.id] ?? []).some(
         (advance) => advance.estado === 'pendiente',
       )
     );
+  }
+
+  /** El líder revisa al equipo; los avances del líder los revisa otro integrante. */
+  canReview(progress: Progress): boolean {
+    const me = this.auth.user()?.id;
+    if (progress.estado !== 'pendiente' || progress.usuario_id === me) {
+      return false;
+    }
+    return this.isLeader() || progress.usuario_id === this.leaderId();
+  }
+
+  voteValue(activity: Activity): number {
+    return this.voteDrafts()[activity.id] ?? activity.mi_voto ?? activity.puntos_acordados;
+  }
+
+  setVote(activity: Activity, value: string): void {
+    this.voteDrafts.update((drafts) => ({ ...drafts, [activity.id]: Number(value) }));
+  }
+
+  vote(activity: Activity): void {
+    const puntos = this.voteValue(activity);
+    if (!(puntos >= 0) || this.voting()) {
+      return;
+    }
+    this.voting.set(activity.id);
+    this.activityService
+      .vote(activity.id, puntos)
+      .pipe(finalize(() => this.voting.set(null)))
+      .subscribe({
+        next: () => this.refreshContribution.update((n) => n + 1),
+        error: (error: unknown) => this.error.set(apiErrorMessage(error, 'No se pudo registrar tu voto.')),
+      });
+  }
+
+  closeVote(activity: Activity): void {
+    this.voting.set(activity.id);
+    this.activityService
+      .closeVote(activity.id)
+      .pipe(finalize(() => this.voting.set(null)))
+      .subscribe({
+        next: () => this.refreshContribution.update((n) => n + 1),
+        error: (error: unknown) => this.error.set(apiErrorMessage(error, 'No se pudo cerrar la votación.')),
+      });
+  }
+
+  onProjectChanged(project: Project): void {
+    this.loadProject(project.id);
   }
 
   pendingAdvances(activity: Activity): Progress[] {
@@ -216,6 +282,7 @@ export class ProjectDetailComponent implements OnInit {
       .pipe(finalize(() => this.sendingAdvance.set(false)))
       .subscribe({
         next: () => {
+          this.error.set('');
           this.activeAdvanceActivity.set(null);
           this.advanceForm.reset();
         },
@@ -235,7 +302,10 @@ export class ProjectDetailComponent implements OnInit {
       .reviewAdvance(progress.id, activityId, estado, comentario)
       .pipe(finalize(() => this.reviewingAdvance.set(null)))
       .subscribe({
-        next: () => this.cancelReject(),
+        next: () => {
+          this.cancelReject();
+          this.refreshContribution.update((n) => n + 1);
+        },
         error: (error: unknown) =>
           this.error.set(apiErrorMessage(error, 'No se pudo revisar el avance.')),
       });

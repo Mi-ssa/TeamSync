@@ -1,6 +1,6 @@
 <div class="app-frame">
   @if (auth.user(); as user) {
-    @if (router.url.startsWith('/dashboard') || router.url.startsWith('/proyectos/')) {
+    @if (router.url.startsWith('/dashboard') || router.url.startsWith('/proyectos/') || router.url.startsWith('/admin')) {
       <header class="topbar">
         <a class="brand" routerLink="/dashboard" aria-label="TeamSync, inicio">
           <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
@@ -8,6 +8,9 @@
         </a>
         <div class="topbar-actions">
           <a class="nav-link" routerLink="/dashboard">Mis proyectos</a>
+          @if (user.es_admin) {
+            <a class="nav-link" routerLink="/admin">Administración</a>
+          }
           <span class="user-chip"><span class="user-avatar">{{ user.nombre.charAt(0).toUpperCase() }}</span>{{ user.nombre }}</span>
           <button class="button button-quiet button-small" type="button" (click)="auth.logout()">Salir</button>
         </div>

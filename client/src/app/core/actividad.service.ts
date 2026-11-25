@@ -32,6 +32,18 @@ export class ActividadService {
     );
   }
 
+  vote(activityId: number, puntos: number): Observable<Activity> {
+    return this.http
+      .post<Activity>(`${API_URL}/actividades/${activityId}/votos`, { puntos })
+      .pipe(tap((activity) => this.replaceActivity(activity)));
+  }
+
+  closeVote(activityId: number): Observable<Activity> {
+    return this.http
+      .post<Activity>(`${API_URL}/actividades/${activityId}/cerrar-votacion`, {})
+      .pipe(tap((activity) => this.replaceActivity(activity)));
+  }
+
   loadAdvances(activityId: number): Observable<Progress[]> {
     return this.http
       .get<Progress[]>(`${API_URL}/actividades/${activityId}/avances`)
@@ -77,13 +89,22 @@ export class ActividadService {
       );
   }
 
-  activityStatus(activity: Activity): 'pendiente' | 'en_revision' | 'aprobada' {
+  activityStatus(activity: Activity): 'en votación' | 'pendiente' | 'en_revision' | 'aprobada' {
     if (activity.estado === 'completada') {
       return 'aprobada';
+    }
+    if (activity.estado === 'votacion') {
+      return 'en votación';
     }
     return (this.advances()[activity.id] ?? []).some((advance) => advance.estado === 'pendiente')
       ? 'en_revision'
       : 'pendiente';
+  }
+
+  private replaceActivity(updated: Activity): void {
+    this.activities.update((activities) =>
+      activities.map((activity) => (activity.id === updated.id ? updated : activity)),
+    );
   }
 
   private setAdvances(activityId: number, advances: Progress[]): void {

@@ -5,7 +5,11 @@ export interface Activity {
   nombre: string;
   descripcion: string | null;
   puntos_acordados: number;
-  estado: string;
+  estado: 'votacion' | 'pendiente' | 'completada';
+  fase: number;
+  votos_emitidos: number;
+  votos_requeridos: number;
+  mi_voto: number | null;
   creado_en: string;
 }
 

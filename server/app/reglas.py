@@ -203,7 +203,7 @@ def contribucion_response(
     if propia and not propia.cumple and puntos_fase > 0:
         aviso = (
             f"Aviso privado: tu aporte validado es {propia.porcentaje}% de tu parte justa "
-            f"({parte_justa:g} pts). El mínimo para cerrar la fase es {minimo:g}%."
+            f"({round(parte_justa, 2):g} pts). El mínimo para cerrar la fase es {minimo:g}%."
         )
     # El integrante ve su propia fila; el líder ve a todo el equipo para poder actuar.
     visibles = filas if rol == "lider" else [f for f in filas if f.usuario_id == usuario_id]

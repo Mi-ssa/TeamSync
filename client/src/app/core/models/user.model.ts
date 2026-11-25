@@ -2,6 +2,8 @@ export interface User {
   id: number;
   nombre: string;
   correo: string;
+  es_admin?: boolean;
+  activo?: boolean;
 }
 
 export interface RegisterRequest {
