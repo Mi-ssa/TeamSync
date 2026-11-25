@@ -4,7 +4,8 @@ from fastapi import APIRouter, HTTPException, status
 from sqlmodel import select
 
 from app.auth import CurrentUser, SessionDep
-from app.models import Actividad, Participacion, Proyecto, Usuario
+from app.models import Actividad, Participacion, Proyecto, Usuario, VotoPuntos
+from app.reglas import actividad_public, exigir_proyecto_activo, miembros_aceptados
 from app.schemas import (
     ActividadCreate,
     ActividadPublic,
@@ -175,11 +176,13 @@ def listar_integrantes(proyecto_id: int, usuario: CurrentUser, session: SessionD
 def crear_actividad(
     proyecto_id: int, payload: ActividadCreate, usuario: CurrentUser, session: SessionDep
 ) -> ActividadPublic:
-    if session.get(Proyecto, proyecto_id) is None:
+    proyecto = session.get(Proyecto, proyecto_id)
+    if proyecto is None:
         raise HTTPException(status_code=404, detail="Proyecto no encontrado")
     lider = get_accepted_participation(session, proyecto_id, usuario.id)
     if lider.rol != "lider":
         raise HTTPException(status_code=403, detail="Solo el líder puede crear actividades")
+    exigir_proyecto_activo(proyecto)
     responsable = session.exec(
         select(Participacion).where(
             Participacion.proyecto_id == proyecto_id,
@@ -196,11 +199,19 @@ def crear_actividad(
         nombre=payload.nombre.strip(),
         descripcion=payload.descripcion,
         puntos_acordados=payload.puntos_acordados,
+        fase=proyecto.fase_actual,
     )
+    # Historia 3: si hay más integrantes, los puntos del líder son solo una propuesta
+    # (su voto) y el equipo vota antes de que la actividad se pueda trabajar.
+    en_equipo = len(miembros_aceptados(session, proyecto_id)) > 1
+    actividad.estado = "votacion" if en_equipo else "pendiente"
     session.add(actividad)
+    session.flush()
+    if en_equipo:
+        session.add(VotoPuntos(actividad_id=actividad.id, usuario_id=usuario.id, puntos=payload.puntos_acordados))
     session.commit()
     session.refresh(actividad)
-    return ActividadPublic.from_model(actividad)
+    return actividad_public(session, actividad, usuario.id)
 
 
 @router.get("/proyectos/{proyecto_id}/actividades", response_model=list[ActividadPublic])
@@ -209,4 +220,4 @@ def listar_actividades(proyecto_id: int, usuario: CurrentUser, session: SessionD
         raise HTTPException(status_code=404, detail="Proyecto no encontrado")
     get_accepted_participation(session, proyecto_id, usuario.id)
     actividades = session.exec(select(Actividad).where(Actividad.proyecto_id == proyecto_id)).all()
-    return [ActividadPublic.from_model(actividad) for actividad in actividades]
+    return [actividad_public(session, actividad, usuario.id) for actividad in actividades]
