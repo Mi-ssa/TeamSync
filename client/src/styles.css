@@ -3,6 +3,7 @@
 @import './app/features/projects/project-detail.styles.css';
 @import './app/features/projects/contribution.styles.css';
 @import './app/features/auth/auth.styles.css';
+@import './app/features/projects/theme-bosque.css';
 
 :root {
   color-scheme: light;
