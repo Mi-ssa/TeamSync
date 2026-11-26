@@ -926,3 +926,68 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* --- Agradecimientos ----------------------------------------------------- */
+
+.thanks-list {
+  display: grid;
+  gap: 6px;
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+}
+
+.thanks-list li {
+  align-items: flex-start;
+  background: var(--canvas);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--terracota);
+  border-radius: 6px;
+  color: var(--ink);
+  display: flex;
+  font-size: 13px;
+  gap: 8px;
+  line-height: 1.5;
+  padding: 8px 10px;
+}
+
+.thanks-icon {
+  color: var(--terracota-dark);
+  flex: 0 0 auto;
+}
+
+.thanks-trigger {
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--primary-dark); /* el terracota queda solo en el ícono */
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  margin-top: 10px;
+  padding: 6px 10px;
+}
+
+.thanks-trigger:hover {
+  background: var(--canvas);
+  border-color: var(--terracota);
+}
+
+.thanks-form {
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+}
+
+.thanks-form textarea {
+  font-size: 14px;
+  min-height: 60px;
+}
+
+.thanks-hint {
+  color: var(--muted);
+  font-size: 12px;
+}

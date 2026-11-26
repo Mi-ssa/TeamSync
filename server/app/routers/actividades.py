@@ -4,11 +4,39 @@ from fastapi import APIRouter, HTTPException, status
 from sqlmodel import select
 
 from app.auth import CurrentUser, SessionDep
-from app.models import Actividad, Avance, Proyecto, VotoPuntos
+from app.agradecimientos import motivo_mensaje_insuficiente
+from app.models import Actividad, Agradecimiento, Avance, Proyecto, Usuario, VotoPuntos
 from app.notificaciones import enlace_proyecto, ids_miembros, notificar, notificar_varios
 from app.reglas import acordar_puntos, actividad_public, miembros_aceptados, votos_de
 from app.routers.proyectos import get_accepted_participation
-from app.schemas import ActividadPublic, AvanceCreate, AvanceDecision, AvancePublic, VotoCreate
+from app.schemas import (
+    ActividadPublic,
+    AgradecimientoCreate,
+    AgradecimientoPublic,
+    AvanceCreate,
+    AvanceDecision,
+    AvancePublic,
+    VotoCreate,
+)
+
+
+def avance_public(session, avance: Avance) -> AvancePublic:
+    gracias = session.exec(
+        select(Agradecimiento).where(Agradecimiento.avance_id == avance.id).order_by(Agradecimiento.id)
+    ).all()
+    publicos = []
+    for g in gracias:
+        autor = session.get(Usuario, g.de_usuario_id)
+        publicos.append(
+            AgradecimientoPublic(
+                id=g.id,
+                de_usuario_id=g.de_usuario_id,
+                de_nombre=autor.nombre if autor else "Integrante",
+                mensaje=g.mensaje,
+                creado_en=g.creado_en.isoformat(),
+            )
+        )
+    return AvancePublic.from_model(avance, publicos)
 
 
 router = APIRouter(tags=["Actividades y avances"])
@@ -66,7 +94,7 @@ def registrar_avance(
     )
     session.commit()
     session.refresh(avance)
-    return AvancePublic.from_model(avance)
+    return avance_public(session, avance)
 
 
 @router.get("/actividades/{actividad_id}/avances", response_model=list[AvancePublic])
@@ -76,7 +104,7 @@ def listar_avances(actividad_id: int, usuario: CurrentUser, session: SessionDep)
         raise HTTPException(status_code=404, detail="Actividad no encontrada")
     get_accepted_participation(session, actividad.proyecto_id, usuario.id)
     avances = session.exec(select(Avance).where(Avance.actividad_id == actividad_id)).all()
-    return [AvancePublic.from_model(avance) for avance in avances]
+    return [avance_public(session, avance) for avance in avances]
 
 
 @router.patch("/avances/{avance_id}/revisar", response_model=AvancePublic)
@@ -142,7 +170,7 @@ def revisar_avance(
         )
     session.commit()
     session.refresh(avance)
-    return AvancePublic.from_model(avance)
+    return avance_public(session, avance)
 
 
 @router.post("/actividades/{actividad_id}/votos", response_model=ActividadPublic)
@@ -190,3 +218,44 @@ def cerrar_votacion(actividad_id: int, usuario: CurrentUser, session: SessionDep
     session.commit()
     session.refresh(actividad)
     return actividad_public(session, actividad, usuario.id)
+
+
+@router.post("/avances/{avance_id}/agradecimientos", response_model=AvancePublic, status_code=201)
+def agradecer_avance(
+    avance_id: int, payload: AgradecimientoCreate, usuario: CurrentUser, session: SessionDep
+) -> AvancePublic:
+    avance = session.get(Avance, avance_id)
+    if avance is None:
+        raise HTTPException(status_code=404, detail="Avance no encontrado")
+    actividad = session.get(Actividad, avance.actividad_id)
+    get_accepted_participation(session, actividad.proyecto_id, usuario.id)
+    if avance.usuario_id == usuario.id:
+        raise HTTPException(status_code=403, detail="No puedes agradecerte a ti mismo")
+    if avance.estado != "aprobado":
+        raise HTTPException(status_code=409, detail="Solo se agradecen avances aprobados")
+    ya = session.exec(
+        select(Agradecimiento).where(
+            Agradecimiento.avance_id == avance_id, Agradecimiento.de_usuario_id == usuario.id
+        )
+    ).first()
+    if ya is not None:
+        raise HTTPException(status_code=409, detail="Ya agradeciste este avance")
+    motivo = motivo_mensaje_insuficiente(payload.mensaje)
+    if motivo:
+        raise HTTPException(status_code=400, detail=motivo)
+    mensaje = payload.mensaje.strip()
+    session.add(
+        Agradecimiento(
+            avance_id=avance_id, de_usuario_id=usuario.id, para_usuario_id=avance.usuario_id, mensaje=mensaje
+        )
+    )
+    notificar(
+        session,
+        avance.usuario_id,
+        "agradecimiento",
+        f"{usuario.nombre} te agradeció tu trabajo en «{actividad.nombre}»",
+        mensaje,
+        enlace_proyecto(actividad.proyecto_id, "actividades"),
+    )
+    session.commit()
+    return avance_public(session, avance)

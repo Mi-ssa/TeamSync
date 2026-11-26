@@ -89,6 +89,18 @@ export class ActividadService {
       );
   }
 
+  thank(id: number, activityId: number, mensaje: string): Observable<Progress> {
+    return this.http.post<Progress>(`${API_URL}/avances/${id}/agradecimientos`, { mensaje }).pipe(
+      tap((updated) => {
+        const current = this.advances()[activityId] ?? [];
+        this.setAdvances(
+          activityId,
+          current.map((advance) => (advance.id === id ? updated : advance)),
+        );
+      }),
+    );
+  }
+
   reviewAdvance(
     id: number,
     activityId: number,

@@ -13,6 +13,15 @@ export interface Activity {
   creado_en: string;
 }
 
+/** Agradecimiento de un compañero por un avance aprobado (no suma puntos). */
+export interface ProgressThanks {
+  id: number;
+  de_usuario_id: number;
+  de_nombre: string;
+  mensaje: string;
+  creado_en: string;
+}
+
 export interface Progress {
   id: number;
   actividad_id: number;
@@ -23,4 +32,5 @@ export interface Progress {
   comentario_revision: string | null;
   creado_en: string;
   revisado_en: string | null;
+  agradecimientos: ProgressThanks[];
 }

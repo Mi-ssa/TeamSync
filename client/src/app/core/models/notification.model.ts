@@ -8,7 +8,9 @@ export type NotificationKind =
   | 'checkin'
   | 'fase'
   | 'declaracion'
-  | 'recordatorio';
+  | 'recordatorio'
+  | 'retroalimentacion'
+  | 'agradecimiento';
 
 export interface AppNotification {
   id: number;
