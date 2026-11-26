@@ -19,13 +19,21 @@
   --bosque-soft: #d8f3dc;
   --bosque-soft-ink: #1b4332; /* sobre chip suave: 9.4:1 */
   --bosque-line: #e8e0d0;
-  --bosque-sunken: #f4f0e6; /* cajas dentro de tarjetas */
-  --bosque-track: #ece4d4; /* fondo de barras de progreso */
-  --bosque-ink: #1f2a22; /* texto principal sobre tarjeta: 14.6:1 */
-  --bosque-text-2: #4a5046; /* texto secundario: 8.2:1 */
-  --bosque-muted: #5e6457; /* texto tenue: 6.0:1 tarjeta / 5.7:1 crema */
+  --bosque-sunken: #faf6ee; /* cajas dentro de tarjetas: el mismo crema de la página */
+  --bosque-track: var(--bosque-line); /* fondo de barras de progreso */
   --bosque-terracota: #bc6c25; /* solo decorativo (bordes) */
   --bosque-terracota-dark: #9a4e16; /* fondo con texto blanco: 6.0:1 */
+
+  /* Neutros y estados tomados de Radix Colors v3 (escalas sand, amber y red):
+     paso 11 = texto de bajo contraste, paso 12 = texto de alto contraste. */
+  --bosque-ink: #21201c; /* sand-12 · 16.0:1 sobre tarjeta */
+  --bosque-text-2: #63635e; /* sand-11 · 5.9:1 tarjeta / 5.6:1 crema */
+  --bosque-muted: #63635e; /* sand-11: un solo gris para textos secundarios */
+  --bosque-warning-line: #ab6400; /* amber-11 · franja de aviso, 4.3:1 sobre crema */
+  --bosque-warning-ink: #4f3422; /* amber-12 · texto ámbar, 10.5:1 sobre amber-3 */
+  --bosque-warning-soft: #fff7c2; /* amber-3 · solo chips pequeños */
+  --bosque-danger: #ce2c31; /* red-11 · 4.5:1 sobre red-3 */
+  --bosque-danger-soft: #feebec; /* red-3 */
 
   /* Los tokens existentes apuntan a la nueva paleta */
   --primary: var(--bosque-primary);
@@ -38,9 +46,13 @@
   --line: var(--bosque-line);
   --canvas: var(--bosque-sunken);
   --mint: var(--bosque-primary);
-  /* Estados: mismos tonos, un poco más oscuros para llegar a 4.5:1 */
-  --amber: #8a5300; /* 5.6:1 sobre ámbar claro (antes 4.4:1) */
-  --green: #047857; /* 4.8:1 sobre verde claro (antes 3.3:1) */
+  /* Estados: el éxito usa el verde de marca (un color menos); ámbar y rojo de Radix */
+  --green: var(--bosque-primary);
+  --green-light: var(--bosque-soft);
+  --amber: var(--bosque-warning-ink);
+  --amber-light: var(--bosque-warning-soft);
+  --red: var(--bosque-danger);
+  --red-light: var(--bosque-danger-soft);
 
   accent-color: var(--bosque-primary); /* casillas de verificación */
   color: var(--bosque-ink);
@@ -129,9 +141,9 @@ body:has(.project-detail-page) {
 }
 
 .page.project-detail-page .nav-count {
-  background: var(--bosque-terracota-dark);
+  background: var(--bosque-cream);
   border-radius: 6px;
-  color: #fff;
+  color: var(--bosque-sidebar);
 }
 
 .page.project-detail-page .sidebar-back {
@@ -273,14 +285,9 @@ body:has(.project-detail-page) {
   border-color: var(--bosque-line);
 }
 
-.page.project-detail-page .check-in-closed,
 .page.project-detail-page .team-tip {
-  background: var(--bosque-soft);
-  border-color: #b7dfc0;
-}
-
-.page.project-detail-page .check-in-closed strong {
-  color: var(--bosque-soft-ink);
+  background: var(--bosque-sunken);
+  border-color: var(--bosque-line);
 }
 
 .page.project-detail-page .declaration {
@@ -290,6 +297,53 @@ body:has(.project-detail-page) {
 .page.project-detail-page .phase-badge {
   background: var(--bosque-soft);
   color: var(--bosque-soft-ink);
+}
+
+/* --- Avisos en línea (patrón de IBM Carbon): fondo neutro, franja de 3px a
+ * la izquierda en el color del estado y texto oscuro. Así el color marca el
+ * tipo de aviso sin teñir toda la caja. ----------------------------------- */
+
+.page.project-detail-page :is(.private-notice, .check-in-closed, .contribution-message, .phase-blockers) {
+  background: var(--bosque-sunken);
+  border: 1px solid var(--bosque-line);
+  border-left: 3px solid var(--bosque-primary); /* informativo */
+  color: var(--bosque-ink);
+}
+
+.page.project-detail-page .phase-blockers {
+  border-left-color: var(--bosque-warning-line); /* advertencia: bloquea el cierre */
+}
+
+.page.project-detail-page .phase-blockers strong {
+  color: var(--bosque-warning-ink);
+}
+
+.page.project-detail-page .check-in-closed strong {
+  color: var(--bosque-ink);
+}
+
+/* --- Tabla de contribución: el color solo marca lo que ya cumple --------- */
+
+.page.project-detail-page .contribution-panel .status-pending {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--bosque-line);
+  color: var(--bosque-text-2);
+}
+
+.page.project-detail-page .share-bar span {
+  background: var(--bosque-text-2); /* 4.6:1 sobre el fondo de la barra */
+}
+
+.page.project-detail-page .share-bar.share-ok span {
+  background: var(--bosque-primary);
+}
+
+.page.project-detail-page .share-value {
+  color: var(--bosque-ink);
+}
+
+.page.project-detail-page .share-value.share-ok {
+  color: var(--bosque-primary);
 }
 
 /* --- Foco de teclado visible --------------------------------------------- */
