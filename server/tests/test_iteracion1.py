@@ -142,8 +142,12 @@ def test_activity_progress_and_leader_approval(client: TestClient):
         headers=leader_headers,
     )
     assert activity_response.status_code == 201
-    assert activity_response.json()["estado"] == "pendiente"
+    # Iteración 2: con más de un integrante, los puntos se acuerdan por votación.
+    assert activity_response.json()["estado"] == "votacion"
     activity_id = activity_response.json()["id"]
+    vote = client.post(f"/actividades/{activity_id}/votos", json={"puntos": 5}, headers=member_headers)
+    assert vote.status_code == 200
+    assert vote.json()["estado"] == "pendiente"
 
     listed = client.get(f"/proyectos/{project_id}/actividades", headers=leader_headers)
     assert listed.status_code == 200
@@ -192,6 +196,7 @@ def test_rechazar_avance_requiere_comentario(client: TestClient):
         json={"nombre": "Diseñar prototipo", "puntos_acordados": 5, "responsable_id": member["id"]},
         headers=leader_headers,
     ).json()["id"]
+    client.post(f"/actividades/{activity_id}/votos", json={"puntos": 5}, headers=member_headers)
     progress_id = client.post(
         f"/actividades/{activity_id}/avances",
         json={"descripcion": "Prototipo terminado"},

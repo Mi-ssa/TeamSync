@@ -12,13 +12,14 @@
         </div>
       }
       <nav class="project-nav">
-        <a href="#project-overview"><span aria-hidden="true">⌂</span> Resumen</a>
-        <a href="#activities"><span aria-hidden="true">☷</span> Actividades</a>
-        <a href="#members"><span aria-hidden="true">♧</span> Integrantes</a>
-        <button type="button" disabled aria-describedby="iteration-two-note">
-          <span aria-hidden="true">▥</span> Contribuciones / Cierre de fase
-        </button>
-        <small id="iteration-two-note">Disponible en Iteración 2</small>
+        @for (item of views; track item.id) {
+          <button type="button" [class.active]="view() === item.id" [attr.aria-current]="view() === item.id ? 'page' : null" (click)="go(item.id)">
+            <span aria-hidden="true">{{ item.icon }}</span> {{ item.label }}
+            @if (item.id === 'actividades' && attention().length) {
+              <b class="nav-count">{{ attention().length }}</b>
+            }
+          </button>
+        }
       </nav>
       <a class="sidebar-back" routerLink="/dashboard"><span aria-hidden="true">←</span> Mis proyectos</a>
     </aside>
@@ -39,6 +40,11 @@
           @if (isLeader()) {
             <span class="role-badge">✦ Líder</span>
           }
+          @if (concluded()) {
+            <span class="phase-badge phase-done">✓ Concluido</span>
+          } @else {
+            <span class="phase-badge">Fase {{ currentProject.fase_actual }}</span>
+          }
         </div>
         <h1>{{ currentProject.nombre }}</h1>
         <p>{{ currentProject.descripcion || 'Alineen sus ideas, acuerden las tareas y avancen juntos.' }}</p>
@@ -49,6 +55,7 @@
       </div>
     </section>
 
+    @if (view() === 'resumen') {
     <section class="project-progress panel" aria-label="Progreso general del proyecto">
       <div class="progress-heading">
         <div><span class="eyebrow">PROGRESO VALIDADO</span><h2>Avance del proyecto</h2></div>
@@ -67,14 +74,51 @@
       <p>{{ approvedPoints() }} de {{ totalPoints() }} puntos aprobados</p>
     </section>
 
-    <div class="project-layout">
+      <div class="overview-grid">
+        <section class="panel attention-panel" aria-labelledby="attention-title">
+          <span class="eyebrow">PARA TI</span>
+          <h2 id="attention-title">Lo que necesita tu atención</h2>
+          @if (attention().length) {
+            <ul class="attention-list">
+              @for (item of attention(); track item.key) {
+                <li>
+                  <span class="attention-icon" aria-hidden="true">{{ item.icon }}</span>
+                  <span>{{ item.text }}</span>
+                  <button class="button button-secondary button-small" type="button" (click)="go('actividades')">Ir</button>
+                </li>
+              }
+            </ul>
+          } @else {
+            <p class="attention-empty">✓ Estás al día. No tienes votos, revisiones ni avances pendientes.</p>
+          }
+        </section>
+
+        <section class="panel overview-team" aria-labelledby="overview-team-title">
+          <span class="eyebrow">EQUIPO</span>
+          <h2 id="overview-team-title">{{ members().length }} integrantes</h2>
+          <div class="overview-avatars">
+            @for (member of members(); track member.id) {
+              <span class="member-avatar member-tone-{{ member.id % 4 }}" [title]="member.nombre">{{ member.nombre.charAt(0).toUpperCase() }}</span>
+            }
+          </div>
+          <button class="button button-secondary button-small" type="button" (click)="go('integrantes')">Ver integrantes</button>
+          <div class="overview-stats">
+            <span><b>{{ countByState('votacion') }}</b> en votación</span>
+            <span><b>{{ countByState('pendiente') }}</b> en curso</span>
+            <span><b>{{ countByState('completada') }}</b> aprobadas</span>
+          </div>
+        </section>
+      </div>
+    }
+
+    @if (view() === 'actividades') {
       <section class="activities-column" id="activities">
         <div class="section-header">
           <div>
             <span class="eyebrow">PLAN DE TRABAJO</span>
             <h2>Actividades <span class="section-count">{{ activityService.activities().length }}</span></h2>
           </div>
-          @if (isLeader()) {
+          @if (isLeader() && !concluded()) {
             <button class="button button-secondary" type="button" (click)="toggleActivityForm()">
               <span class="plus">+</span> Nueva actividad
             </button>
@@ -86,7 +130,7 @@
             <div class="section-title">
               <div>
                 <h2>Definir una actividad</h2>
-                <p>Asigna una persona responsable y acuerden los puntos.</p>
+                <p>Asigna una persona responsable y propone los puntos; el equipo vota y se acuerda la mediana.</p>
               </div>
               <button class="modal-close" type="button" aria-label="Cerrar formulario" (click)="showActivityForm.set(false)">×</button>
             </div>
@@ -101,7 +145,7 @@
               </div>
               <div class="activity-form-row">
                 <div class="field">
-                  <label for="activity-points">Puntos acordados</label>
+                  <label for="activity-points">Puntos propuestos (tu voto)</label>
                   <input id="activity-points" type="number" min="0" step="0.5" formControlName="puntos_acordados" />
                 </div>
                 <div class="field">
@@ -130,8 +174,8 @@
             @for (activity of activityService.activities(); track activity.id) {
               <article class="activity-card panel">
                 <div class="activity-card-top">
-                  <span class="activity-number">T{{ activity.id.toString().padStart(2, '0') }}</span>
-                  <span class="status {{ statusClass(activity) }}">{{ status(activity) }}</span>
+                  <span class="activity-number">T{{ activity.id.toString().padStart(2, '0') }} · FASE {{ activity.fase }}</span>
+                  <span class="status {{ statusClass(activity) }}">{{ statusLabel(activity) }}</span>
                 </div>
                 <div class="activity-main">
                   <h3>{{ activity.nombre }}</h3>
@@ -140,9 +184,31 @@
                   }
                   <div class="activity-meta">
                     <span class="assignee"><span class="assignee-avatar">{{ memberName(activity.responsable_id).charAt(0).toUpperCase() }}</span>{{ memberName(activity.responsable_id) }}</span>
-                    <span class="points"><span aria-hidden="true">✦</span> {{ activity.puntos_acordados }} puntos</span>
+                    @if (activity.estado === 'votacion') {
+                      <span class="points"><span aria-hidden="true">✦</span> {{ activity.votos_emitidos }}/{{ activity.votos_requeridos }} votos</span>
+                    } @else {
+                      <span class="points"><span aria-hidden="true">✦</span> {{ activity.puntos_acordados }} puntos acordados</span>
+                    }
                   </div>
                 </div>
+
+                @if (activity.estado === 'votacion') {
+                  <div class="vote-box">
+                    <p>
+                      <strong>¿Cuántos puntos vale esta actividad?</strong>
+                      Se acuerda la mediana cuando vota todo el equipo{{ isLeader() ? ', o cuando cierres la votación con mayoría' : '' }}.
+                      @if (activity.mi_voto !== null) { Tu voto: <b>{{ activity.mi_voto }}</b>. }
+                    </p>
+                    <div class="vote-actions">
+                      <label class="sr-only" [for]="'vote-' + activity.id">Puntos</label>
+                      <input [id]="'vote-' + activity.id" type="number" min="0" step="0.5" [value]="voteValue(activity)" (input)="setVote(activity, $any($event.target).value)" />
+                      <button class="button button-small" type="button" [disabled]="voting() === activity.id" (click)="vote(activity)">{{ activity.mi_voto !== null ? 'Cambiar voto' : 'Votar' }}</button>
+                      @if (isLeader()) {
+                        <button class="button button-secondary button-small" type="button" [disabled]="voting() === activity.id || activity.votos_emitidos * 2 <= activity.votos_requeridos" (click)="closeVote(activity)">Cerrar votación</button>
+                      }
+                    </div>
+                  </div>
+                }
 
                 @if (activityService.advances()[activity.id]?.length) {
                   <div class="progress-list">
@@ -156,7 +222,7 @@
                         @if (progress.url_evidencia) {
                           <a class="evidence-link" [href]="progress.url_evidencia" target="_blank" rel="noopener noreferrer">↗ Ver evidencia</a>
                         }
-                        @if (isLeader() && progress.estado === 'pendiente') {
+                        @if (canReview(progress)) {
                           @if (rejectingAdvance() === progress.id) {
                             <div class="reject-form">
                               <div class="field">
@@ -179,12 +245,14 @@
                               <button class="button button-small" type="button" [disabled]="reviewingAdvance() === progress.id" (click)="review(progress, activity.id, 'aprobado')">Aprobar avance</button>
                             </div>
                           }
-                        } @else if (progress.estado !== 'pendiente') {
+                        } @else if (progress.estado === 'pendiente') {
+                          <span class="progress-result">{{ progress.usuario_id === auth.user()?.id ? 'Esperando revisión' + (isLeader() ? ' de otro integrante' : ' del líder') : 'Esperando revisión' }}</span>
+                        } @else {
                           <span class="progress-result" [class]="progress.estado === 'aprobado' ? 'progress-result approved' : 'progress-result rejected'">
                             {{ progress.estado === 'aprobado' ? 'Avance aprobado' : 'Avance rechazado' }}
                           </span>
                           @if (progress.comentario_revision) {
-                            <p class="review-comment"><strong>Comentario del líder:</strong> {{ progress.comentario_revision }}</p>
+                            <p class="review-comment"><strong>Comentario de la revisión:</strong> {{ progress.comentario_revision }}</p>
                           }
                         }
                       </div>
@@ -231,55 +299,73 @@
           </div>
         }
       </section>
+    }
 
-      <aside class="team-column" id="members">
-        <section class="panel team-panel">
-          <div class="section-title team-title">
+    @if (view() === 'integrantes') {
+      <section class="members-view" id="members" aria-labelledby="members-title">
+        <div class="section-header">
+          <div>
+            <span class="eyebrow">LAS PERSONAS</span>
+            <h2 id="members-title">Integrantes <span class="section-count">{{ members().length }}</span></h2>
+          </div>
+          @if (isLeader() && !concluded()) {
+            <button class="button button-secondary" type="button" (click)="showInvite.set(!showInvite())">
+              <span class="plus">+</span> Invitar integrante
+            </button>
+          }
+        </div>
+
+        @if (showInvite() && isLeader()) {
+          <section class="panel invite-panel" aria-labelledby="invite-title">
             <div>
-              <span class="eyebrow">LAS PERSONAS</span>
-              <h2>Integrantes <span class="section-count">{{ members().length }}</span></h2>
+              <h3 id="invite-title">Invitar a alguien al equipo</h3>
+              <p>Recibirá la invitación en su tablero y se suma al aceptarla.</p>
             </div>
-            <span class="team-icon">♧</span>
-          </div>
-          <div class="member-list">
-            @for (member of members(); track member.id) {
-              <div class="member-row">
-                <span class="member-avatar member-tone-{{ member.id % 4 }}">{{ member.nombre.charAt(0).toUpperCase() }}</span>
-                <div class="member-details">
-                  <strong>{{ member.nombre }}{{ member.id === auth.user()?.id ? ' (tú)' : '' }}</strong>
-                  <span>{{ member.correo }}</span>
-                </div>
-                @if (member.rol === 'lider') {
-                  <span class="leader-label">Líder</span>
-                }
-              </div>
-            }
-          </div>
-          @if (isLeader()) {
-            <div class="invite-section">
-              <div class="invite-caption">
-                <strong>¿Falta alguien?</strong>
-                <span>Invítale por correo para sumarlo.</span>
-              </div>
-              <form class="invite-form" [formGroup]="inviteForm" (ngSubmit)="invite()">
+            <form class="invite-form" [formGroup]="inviteForm" (ngSubmit)="invite()">
                 <div class="field">
                   <label for="invite-email">Correo electrónico</label>
                   <input id="invite-email" type="email" formControlName="correo" placeholder="compañero@equipo.com" />
                 </div>
                 <button class="button invite-button" type="submit" [disabled]="inviting()">{{ inviting() ? 'Enviando…' : 'Enviar invitación' }}</button>
               </form>
-              @if (inviteMessage()) {
+            @if (inviteMessage()) {
                 <p class="invite-feedback" [class]="inviteMessage().startsWith('Invitación enviada') ? 'invite-feedback success' : 'invite-feedback error'">{{ inviteMessage() }}</p>
               }
-            </div>
+          </section>
+        }
+
+        <div class="member-cards">
+          @for (member of members(); track member.id) {
+            <article class="panel member-card">
+              <span class="member-avatar member-tone-{{ member.id % 4 }}">{{ member.nombre.charAt(0).toUpperCase() }}</span>
+              <div class="member-details">
+                <strong>{{ member.nombre }}{{ member.id === auth.user()?.id ? ' (tú)' : '' }}</strong>
+                <span>{{ member.correo }}</span>
+              </div>
+              @if (member.rol === 'lider') {
+                <span class="leader-label">Líder</span>
+              }
+              <dl class="member-stats">
+                <div><dt>Actividades</dt><dd>{{ memberStats(member.id).total }}</dd></div>
+                <div><dt>Aprobadas</dt><dd>{{ memberStats(member.id).done }}</dd></div>
+                <div><dt>Puntos aprobados</dt><dd>{{ memberStats(member.id).points }}</dd></div>
+              </dl>
+            </article>
           }
-        </section>
-        <div class="team-tip">
-          <span class="tip-icon">✦</span>
-          <p>Los puntos se acuerdan antes de empezar. Así cada contribución queda clara para todo el equipo.</p>
         </div>
-      </aside>
-    </div>
+      </section>
+    }
+
+    @if (view() === 'contribuciones') {
+        <app-contribution-panel
+      [project]="currentProject"
+      [members]="members()"
+      [isLeader]="isLeader()"
+      [refresh]="refreshContribution()"
+      (projectChanged)="onProjectChanged($event)"
+    />
+    }
+
   }
     </div>
   </div>

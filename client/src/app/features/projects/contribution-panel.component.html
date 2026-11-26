@@ -1,0 +1,226 @@
+<section class="panel contribution-panel" id="contribuciones" aria-labelledby="contribution-title">
+  <div class="section-header">
+    <div>
+      <span class="eyebrow">{{ concluded() ? 'PROYECTO CONCLUIDO' : 'FASE ' + project().fase_actual + ' · CHECK-IN' }}</span>
+      <h2 id="contribution-title">Contribuciones y cierre de fase</h2>
+    </div>
+    <button class="button button-secondary button-small" type="button" [disabled]="loading()" (click)="load(true)">
+      {{ loading() ? 'Actualizando…' : '↻ Actualizar' }}
+    </button>
+  </div>
+
+  @if (error()) {
+    <p class="error-message" role="alert">{{ error() }}</p>
+  }
+  @if (message()) {
+    <p class="contribution-message" role="status">{{ message() }}</p>
+  }
+
+  @if (summary(); as data) {
+    @if (!concluded()) {
+      @if (data.aviso) {
+        <p class="private-notice" role="note"><strong>🔒</strong> {{ data.aviso }}</p>
+      }
+
+      <div class="fair-share-chips">
+        <span><small>Puntos de la fase</small><b>{{ data.puntos_fase }}</b></span>
+        <span><small>Parte justa por persona</small><b>{{ data.parte_justa }}</b></span>
+        <span><small>Mínimo para cerrar</small><b>{{ data.porcentaje_minimo }}%</b></span>
+      </div>
+
+      <div class="contribution-table-wrap">
+        <table class="contribution-table">
+          <thead>
+            <tr>
+              <th scope="col">Integrante</th>
+              <th scope="col">Aprobados</th>
+              <th scope="col">Validados por pares</th>
+              <th scope="col">Contra su parte justa</th>
+              <th scope="col">Check-in</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of data.integrantes; track row.usuario_id) {
+              <tr>
+                <th scope="row">
+                  {{ row.nombre }}{{ row.usuario_id === auth.user()?.id ? ' (tú)' : '' }}
+                  @if (row.rol === 'lider') { <span class="leader-label">Líder</span> }
+                </th>
+                <td>{{ row.puntos_aprobados }} pts</td>
+                <td>{{ row.puntos_validados }} pts <small>({{ row.confirmaciones }} confirmaciones)</small></td>
+                <td>
+                  @if (!data.checkin_abierto) {
+                    <span class="share-empty">—</span>
+                  } @else {
+                  <div class="share-bar" [class.share-ok]="row.cumple" role="img" [attr.aria-label]="row.porcentaje + '% de su parte justa'">
+                    <span [style.width.%]="row.porcentaje > 100 ? 100 : row.porcentaje"></span>
+                    <i [style.left.%]="data.porcentaje_minimo"></i>
+                  </div>
+                  <b class="share-value" [class.share-ok]="row.cumple">{{ row.porcentaje }}%</b>
+                  }
+                </td>
+                <td>
+                  @if (!data.checkin_abierto) {
+                    <span class="share-empty">Aún no abre</span>
+                  } @else if (row.evaluaciones_pendientes === 0) {
+                    <span class="status status-approved">Completo</span>
+                  } @else {
+                    <span class="status status-pending">Faltan {{ row.evaluaciones_pendientes }}</span>
+                  }
+                  @if (row.promedio_evaluacion !== null) {
+                    <small class="peer-score">★ {{ row.promedio_evaluacion }}/5</small>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      @if (!isLeader()) {
+        <p class="contribution-hint">Tu resultado es privado: solo tú y el líder lo ven. Tus puntos cuentan como validados cuando la mayoría de tus compañeros confirma tu aporte en su check-in.</p>
+      }
+
+      @if (peers().length && !data.checkin_abierto) {
+        <div class="check-in-closed">
+          <strong>El check-in de la fase {{ data.fase }} todavía no abre</strong>
+          <p>En el check-in cada integrante confirma que los avances aprobados de sus compañeros reflejan lo que realmente aportaron, y los califica en comunicación, calidad y compromiso. Esa confirmación es la que convierte los puntos aprobados en <b>puntos validados</b>. Se abre en cuanto haya al menos una actividad aprobada en la fase.</p>
+        </div>
+      }
+
+      @if (peers().length && data.checkin_abierto) {
+        <div class="check-in">
+          <div class="check-in-heading">
+            <div>
+              <h3>Tu check-in de la fase {{ data.fase }}</h3>
+              <p>Confirma si los avances aprobados de cada compañero reflejan lo que realmente aportó.</p>
+            </div>
+            <span>{{ checkInDone() }} de {{ peers().length }} compañeros evaluados</span>
+          </div>
+          @for (peer of peers(); track peer.id) {
+            @if (drafts[peer.id]; as draft) {
+              <form class="check-in-row" (ngSubmit)="saveEvaluation(peer.id)">
+                <div class="check-in-top">
+                  <div class="check-in-person">
+                    <span class="member-avatar member-tone-{{ peer.id % 4 }}">{{ peer.nombre.charAt(0).toUpperCase() }}</span>
+                    <strong>{{ peer.nombre }}</strong>
+                    @if (evaluated(peer.id)) { <span class="status status-approved">Evaluado</span> }
+                  </div>
+                  <div class="check-in-scores">
+                    <label>Comunicación
+                      <select [(ngModel)]="draft.comunicacion" [name]="'com-' + peer.id">
+                        @for (n of scale; track n) { <option [ngValue]="n">{{ n }}</option> }
+                      </select>
+                    </label>
+                    <label>Calidad
+                      <select [(ngModel)]="draft.calidad" [name]="'cal-' + peer.id">
+                        @for (n of scale; track n) { <option [ngValue]="n">{{ n }}</option> }
+                      </select>
+                    </label>
+                    <label>Compromiso
+                      <select [(ngModel)]="draft.compromiso" [name]="'comp-' + peer.id">
+                        @for (n of scale; track n) { <option [ngValue]="n">{{ n }}</option> }
+                      </select>
+                    </label>
+                  </div>
+                </div>
+                <label class="check-in-confirm">
+                  <input type="checkbox" [(ngModel)]="draft.confirma_aporte" [name]="'conf-' + peer.id" />
+                  Confirmo que sus avances aprobados en esta fase reflejan lo que realmente aportó
+                </label>
+                <div class="check-in-bottom">
+                  <input class="check-in-comment" [(ngModel)]="draft.comentario" [name]="'coment-' + peer.id" maxlength="1000" placeholder="Comentario para el equipo (opcional)" [attr.aria-label]="'Comentario sobre ' + peer.nombre" />
+                  <button class="button button-small" type="submit" [disabled]="saving() === peer.id">
+                    {{ saving() === peer.id ? 'Guardando…' : evaluated(peer.id) ? 'Actualizar' : 'Guardar' }}
+                  </button>
+                </div>
+              </form>
+            }
+          }
+        </div>
+      }
+
+      @if (isLeader()) {
+        <div class="phase-close">
+          @if (data.pendientes_cierre.length) {
+            <div class="phase-blockers">
+              <strong>Para cerrar la fase {{ data.fase }} falta:</strong>
+              <ul>
+                @for (item of data.pendientes_cierre; track item) { <li>{{ item }}</li> }
+              </ul>
+            </div>
+          } @else if (data.puede_cerrar) {
+            <p class="phase-ready">✓ Todos cumplen su parte justa y terminaron su check-in.</p>
+          }
+          @if (confirming(); as action) {
+            <div class="confirm-box" role="alertdialog" aria-label="Confirmar acción">
+              <span>{{ action === 'cerrar' ? '¿Cerrar la fase ' + data.fase + '? Lo que no se terminó pasa a la siguiente.' : '¿Concluir el proyecto? Ya no se podrán crear actividades.' }}</span>
+              <button class="button button-secondary button-small" type="button" [disabled]="working()" (click)="confirming.set(null)">Cancelar</button>
+              <button class="button button-small" type="button" [disabled]="working()" (click)="runConfirmed()">{{ working() ? 'Procesando…' : 'Sí, continuar' }}</button>
+            </div>
+          } @else {
+            <div class="phase-actions">
+              <button class="button button-secondary" type="button" (click)="confirm('concluir')">Concluir proyecto</button>
+              <button class="button" type="button" [disabled]="!data.puede_cerrar" (click)="confirm('cerrar')">Cerrar fase {{ data.fase }}</button>
+            </div>
+          }
+        </div>
+      }
+    }
+
+    @if (declaration(); as decl) {
+      <div class="declaration" id="declaracion">
+        <div class="declaration-heading">
+          <div>
+            <span class="eyebrow">DOCUMENTO FINAL</span>
+            <h3>Declaración de contribución</h3>
+            <p>
+              Proyecto «{{ decl.nombre_proyecto }}»{{ decl.concluido_en ? ', concluido el ' : '' }}{{ decl.concluido_en ? (decl.concluido_en | date: 'd MMM y') : '' }}.
+              Total validado: {{ decl.puntos_totales }} puntos.
+            </p>
+          </div>
+          <button class="button button-secondary button-small" type="button" (click)="printDeclaration()">Imprimir / PDF</button>
+        </div>
+        <table class="contribution-table">
+          <thead>
+            <tr>
+              <th scope="col">Integrante</th>
+              <th scope="col">Puntos validados</th>
+              <th scope="col">% del proyecto</th>
+              <th scope="col">Actividades</th>
+              <th scope="col">Firma</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of decl.integrantes; track row.usuario_id) {
+              <tr>
+                <th scope="row">{{ row.nombre }}{{ row.usuario_id === auth.user()?.id ? ' (tú)' : '' }}</th>
+                <td>{{ row.puntos_validados }}</td>
+                <td>{{ row.porcentaje }}%</td>
+                <td>{{ row.actividades.length ? row.actividades.join(', ') : '—' }}</td>
+                <td>
+                  @if (row.firmado) {
+                    <span class="status status-approved">firmó {{ row.firmado_en | date: 'd MMM' }}</span>
+                  } @else if (row.puntos_validados > 0) {
+                    <span class="status status-pending">pendiente</span>
+                  } @else {
+                    <span class="status status-rejected">sin aporte validado</span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+        <div class="declaration-sign">
+          @if (decl.puedo_firmar) {
+            <p>Al firmar declaras que esta distribución refleja el trabajo real del equipo.</p>
+            <button class="button" type="button" [disabled]="signing()" (click)="sign()">{{ signing() ? 'Firmando…' : 'Firmar declaración' }}</button>
+          } @else if (decl.motivo) {
+            <p [class.declaration-blocked]="decl.motivo.startsWith('Sin aporte')">{{ decl.motivo }}</p>
+          }
+        </div>
+      </div>
+    }
+  } @else if (loading()) {
+    <div class="loading-state"><span class="spinner"></span> Calculando contribuciones…</div>
+  }
+</section>

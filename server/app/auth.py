@@ -49,7 +49,7 @@ def get_current_user(
         raise unauthorized from None
 
     user = session.get(Usuario, user_id)
-    if user is None:
+    if user is None or not user.activo:
         raise unauthorized
     return user
 

@@ -1,6 +1,7 @@
 @import './app/features/landing/landing.styles.css';
 @import './app/features/dashboard/dashboard.styles.css';
 @import './app/features/projects/project-detail.styles.css';
+@import './app/features/projects/contribution.styles.css';
 @import './app/features/auth/auth.styles.css';
 
 :root {

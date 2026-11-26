@@ -1,5 +1,3 @@
-from typing import Literal
-
 from typing import Annotated, Literal
 
 from pydantic import StringConstraints
@@ -26,6 +24,8 @@ class UsuarioPublic(SQLModel):
     id: int
     nombre: str
     correo: str
+    es_admin: bool = False
+    activo: bool = True
 
 
 class TokenResponse(SQLModel):
@@ -43,6 +43,8 @@ class ProyectoPublic(SQLModel):
     nombre: str
     descripcion: str | None
     creado_por_id: int
+    fase_actual: int = 1
+    estado: str = "activo"
     creado_en: str
 
     @classmethod
@@ -52,6 +54,8 @@ class ProyectoPublic(SQLModel):
             nombre=proyecto.nombre,
             descripcion=proyecto.descripcion,
             creado_por_id=proyecto.creado_por_id,
+            fase_actual=proyecto.fase_actual,
+            estado=proyecto.estado,
             creado_en=proyecto.creado_en.isoformat(),
         )
 
@@ -113,10 +117,20 @@ class ActividadPublic(SQLModel):
     descripcion: str | None
     puntos_acordados: float
     estado: str
+    fase: int = 1
+    votos_emitidos: int = 0
+    votos_requeridos: int = 0
+    mi_voto: float | None = None
     creado_en: str
 
     @classmethod
-    def from_model(cls, actividad: Actividad) -> "ActividadPublic":
+    def from_model(
+        cls,
+        actividad: Actividad,
+        votos_emitidos: int = 0,
+        votos_requeridos: int = 0,
+        mi_voto: float | None = None,
+    ) -> "ActividadPublic":
         return cls(
             id=actividad.id,
             proyecto_id=actividad.proyecto_id,
@@ -125,6 +139,10 @@ class ActividadPublic(SQLModel):
             descripcion=actividad.descripcion,
             puntos_acordados=actividad.puntos_acordados,
             estado=actividad.estado,
+            fase=actividad.fase,
+            votos_emitidos=votos_emitidos,
+            votos_requeridos=votos_requeridos,
+            mi_voto=mi_voto,
             creado_en=actividad.creado_en.isoformat(),
         )
 
@@ -163,3 +181,121 @@ class AvancePublic(SQLModel):
             creado_en=avance.creado_en.isoformat(),
             revisado_en=avance.revisado_en.isoformat() if avance.revisado_en else None,
         )
+
+
+# --- Iteración 2 -----------------------------------------------------------
+
+
+class VotoCreate(SQLModel):
+    puntos: float = Field(ge=0, le=1000)
+
+
+class EvaluacionCreate(SQLModel):
+    evaluado_id: int
+    comunicacion: int = Field(ge=1, le=5)
+    calidad: int = Field(ge=1, le=5)
+    compromiso: int = Field(ge=1, le=5)
+    confirma_aporte: bool = True
+    comentario: str | None = Field(default=None, max_length=1000)
+
+
+class EvaluacionPublic(SQLModel):
+    id: int
+    fase: int
+    evaluador_id: int
+    evaluado_id: int
+    comunicacion: int
+    calidad: int
+    compromiso: int
+    puntuacion: float
+    confirma_aporte: bool
+    comentario: str | None
+
+
+class ContribucionIntegrante(SQLModel):
+    usuario_id: int
+    nombre: str
+    rol: str
+    puntos_aprobados: float
+    puntos_validados: float
+    porcentaje: float
+    cumple: bool
+    confirmaciones: int
+    evaluaciones_recibidas: int
+    evaluaciones_pendientes: int
+    promedio_evaluacion: float | None
+
+
+class ContribucionResponse(SQLModel):
+    fase: int
+    estado_proyecto: str
+    porcentaje_minimo: float
+    puntos_fase: float
+    parte_justa: float
+    integrantes: list[ContribucionIntegrante]
+    mis_evaluaciones: list[EvaluacionPublic]
+    checkin_abierto: bool = False
+    aviso: str | None
+    puede_cerrar: bool
+    pendientes_cierre: list[str]
+
+
+class DeclaracionIntegrante(SQLModel):
+    usuario_id: int
+    nombre: str
+    rol: str
+    puntos_validados: float
+    porcentaje: float
+    actividades: list[str]
+    firmado: bool
+    firmado_en: str | None
+
+
+class DeclaracionResponse(SQLModel):
+    proyecto_id: int
+    nombre_proyecto: str
+    concluido_en: str | None
+    puntos_totales: float
+    integrantes: list[DeclaracionIntegrante]
+    puedo_firmar: bool
+    motivo: str | None
+
+
+class ConfiguracionPublic(SQLModel):
+    porcentaje_minimo: float
+    dias_inactividad: int
+
+
+class ConfiguracionUpdate(SQLModel):
+    porcentaje_minimo: float = Field(ge=0, le=100)
+    dias_inactividad: int = Field(ge=1, le=365)
+
+
+class UsuarioAdminUpdate(SQLModel):
+    activo: bool | None = None
+    es_admin: bool | None = None
+
+
+class ReporteProyecto(SQLModel):
+    id: int
+    nombre: str
+    lider: str
+    estado: str
+    fase_actual: int
+    integrantes: int
+    actividades: int
+    actividades_completadas: int
+    puntos_totales: float
+    puntos_validados: float
+    integrantes_bajo_minimo: int
+    integrantes_inactivos: int
+
+
+class ReporteResponse(SQLModel):
+    usuarios: int
+    usuarios_activos: int
+    proyectos: int
+    proyectos_concluidos: int
+    porcentaje_minimo: float
+    dias_inactividad: int
+    detalle: list[ReporteProyecto]

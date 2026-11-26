@@ -1,7 +1,8 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { finalize } from 'rxjs';
+import { finalize, interval } from 'rxjs';
 import { apiErrorMessage } from '../../core/api-error';
 import { AuthService } from '../../core/auth.service';
 import { ProyectoService } from '../../core/proyecto.service';
@@ -15,6 +16,7 @@ import { ProyectoService } from '../../core/proyecto.service';
 })
 export class DashboardComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
+  private readonly destroyRef = inject(DestroyRef);
   readonly auth = inject(AuthService);
   readonly proyectoService = inject(ProyectoService);
   readonly showProjectModal = signal(false);
@@ -29,6 +31,14 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadProjects();
+    // Las invitaciones nuevas aparecen sin recargar la página.
+    interval(8000)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        if (!document.hidden && !this.loading()) {
+          this.proyectoService.loadMine().subscribe({ error: () => undefined });
+        }
+      });
   }
 
   loadProjects(): void {

@@ -1,3 +1,5 @@
+import os
+
 from fastapi import APIRouter, HTTPException, status
 from sqlmodel import select
 
@@ -7,6 +9,12 @@ from app.schemas import LoginRequest, RegisterRequest, TokenResponse, UsuarioPub
 
 
 router = APIRouter(prefix="/auth", tags=["Autenticación"])
+
+
+def admin_emails() -> set[str]:
+    """Correos que se registran como administrador (variable TEAMSYNC_ADMIN_EMAILS)."""
+    valor = os.getenv("TEAMSYNC_ADMIN_EMAILS", "admin@teamsync.local")
+    return {correo.strip().lower() for correo in valor.split(",") if correo.strip()}
 
 
 @router.post("/register", response_model=UsuarioPublic, status_code=status.HTTP_201_CREATED)
@@ -20,6 +28,7 @@ def register(payload: RegisterRequest, session: SessionDep) -> Usuario:
         nombre=payload.nombre.strip(),
         correo=correo,
         contrasena_hash=hash_password(payload.contrasena),
+        es_admin=correo in admin_emails(),
     )
     session.add(usuario)
     session.commit()
@@ -33,6 +42,8 @@ def login(payload: LoginRequest, session: SessionDep) -> TokenResponse:
     usuario = session.exec(select(Usuario).where(Usuario.correo == correo)).first()
     if usuario is None or not verify_password(payload.contrasena, usuario.contrasena_hash):
         raise HTTPException(status_code=401, detail="Correo o contraseña incorrectos")
+    if not usuario.activo:
+        raise HTTPException(status_code=403, detail="Tu cuenta está desactivada; contacta al administrador")
     return TokenResponse(access_token=create_access_token(usuario.id))
 
 

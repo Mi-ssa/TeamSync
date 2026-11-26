@@ -55,7 +55,7 @@ describe('ProjectDetailComponent progress', () => {
   });
 });
 
-function activity(id: number, points: number, estado: string): Activity {
+function activity(id: number, points: number, estado: Activity['estado']): Activity {
   return {
     id,
     proyecto_id: 1,
@@ -64,6 +64,10 @@ function activity(id: number, points: number, estado: string): Activity {
     descripcion: null,
     puntos_acordados: points,
     estado,
+    fase: 1,
+    votos_emitidos: 0,
+    votos_requeridos: 0,
+    mi_voto: null,
     creado_en: '',
   };
 }
