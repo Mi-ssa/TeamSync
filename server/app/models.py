@@ -82,7 +82,9 @@ class EvaluacionPares(SQLModel, table=True):
     compromiso: int = Field(default=3, ge=1, le=5)
     puntuacion: float = Field(ge=0)
     confirma_aporte: bool = True
-    comentario: str | None = None
+    comentario: str | None = None  # versión anterior: un solo comentario libre
+    fortaleza: str | None = None  # "Algo que hizo bien"
+    mejora: str | None = None  # "Algo que podría mejorar"
     creado_en: datetime = Field(default_factory=utc_now)
 
 

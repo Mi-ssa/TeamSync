@@ -8,6 +8,7 @@ import { FaseService } from '../../core/fase.service';
 import {
   ContributionSummary,
   Declaration,
+  MyFeedback,
   PeerEvaluationInput,
 } from '../../core/models/contribution.model';
 import { Project, ProjectMember } from '../../core/models/project.model';
@@ -33,6 +34,7 @@ export class ContributionPanelComponent {
 
   readonly summary = signal<ContributionSummary | null>(null);
   readonly declaration = signal<Declaration | null>(null);
+  readonly feedback = signal<MyFeedback | null>(null);
   readonly loading = signal(false);
   readonly error = signal('');
   readonly message = signal('');
@@ -51,6 +53,38 @@ export class ContributionPanelComponent {
     return this.peers().filter((peer) => done.has(peer.id)).length;
   });
   readonly scale = [1, 2, 3, 4, 5];
+  /**
+   * Escala con anclas de conducta (como la de CATME): cada número describe algo
+   * observable, para que calificar no dependa de saber dar retroalimentación.
+   */
+  readonly anchors: Record<'comunicacion' | 'calidad' | 'compromiso', string[]> = {
+    comunicacion: [
+      'Casi nunca avisaba ni respondía',
+      'Respondía tarde o a medias',
+      'Avisaba lo necesario',
+      'Mantenía al equipo informado',
+      'Avisaba avances y problemas a tiempo',
+    ],
+    calidad: [
+      'Entregas incompletas o con muchos errores',
+      'Hubo que corregir bastante',
+      'Cumplía con lo pedido',
+      'Trabajo cuidado, pocos ajustes',
+      'Entregas que no hubo que rehacer',
+    ],
+    compromiso: [
+      'No cumplía acuerdos ni fechas',
+      'Cumplía a veces',
+      'Cumplía las fechas acordadas',
+      'Cumplía y se ofrecía a ayudar',
+      'Cumplía, ayudaba y sostenía al equipo',
+    ],
+  };
+  readonly criteria: { key: 'comunicacion' | 'calidad' | 'compromiso'; label: string }[] = [
+    { key: 'comunicacion', label: 'Comunicación' },
+    { key: 'calidad', label: 'Calidad' },
+    { key: 'compromiso', label: 'Compromiso' },
+  ];
 
   constructor() {
     effect(() => {
@@ -71,12 +105,14 @@ export class ContributionPanelComponent {
     forkJoin({
       summary: this.fases.contribution(project.id),
       declaration: project.estado === 'concluido' ? this.fases.declaration(project.id) : of(null),
+      feedback: this.fases.myFeedback(project.id),
     })
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
-        next: ({ summary, declaration }) => {
+        next: ({ summary, declaration, feedback }) => {
           this.summary.set(summary);
           this.declaration.set(declaration);
+          this.feedback.set(feedback);
           this.buildDrafts(summary);
         },
         error: (error: unknown) => {
@@ -104,7 +140,8 @@ export class ContributionPanelComponent {
         comunicacion: Number(draft.comunicacion),
         calidad: Number(draft.calidad),
         compromiso: Number(draft.compromiso),
-        comentario: draft.comentario?.trim() || null,
+        fortaleza: draft.fortaleza?.trim() || null,
+        mejora: draft.mejora?.trim() || null,
       })
       .pipe(finalize(() => this.saving.set(null)))
       .subscribe({
@@ -172,6 +209,15 @@ export class ContributionPanelComponent {
       });
   }
 
+  /** Describe un promedio con el ancla de conducta más cercana. */
+  anchorFor(key: 'comunicacion' | 'calidad' | 'compromiso', value: number | null): string {
+    if (value === null) {
+      return '';
+    }
+    const index = Math.min(5, Math.max(1, Math.round(value))) - 1;
+    return this.anchors[key][index];
+  }
+
   printDeclaration(): void {
     window.print();
   }
@@ -191,7 +237,8 @@ export class ContributionPanelComponent {
         calidad: previous?.calidad ?? 3,
         compromiso: previous?.compromiso ?? 3,
         confirma_aporte: previous?.confirma_aporte ?? true,
-        comentario: previous?.comentario ?? '',
+        fortaleza: previous?.fortaleza ?? '',
+        mejora: previous?.mejora ?? '',
       };
     }
     this.drafts = drafts;

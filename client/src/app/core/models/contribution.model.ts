@@ -9,6 +9,8 @@ export interface PeerEvaluation {
   puntuacion: number;
   confirma_aporte: boolean;
   comentario: string | null;
+  fortaleza: string | null;
+  mejora: string | null;
 }
 
 export interface PeerEvaluationInput {
@@ -17,7 +19,28 @@ export interface PeerEvaluationInput {
   calidad: number;
   compromiso: number;
   confirma_aporte: boolean;
-  comentario: string | null;
+  fortaleza: string | null;
+  mejora: string | null;
+}
+
+/** Lo que el equipo le dijo a la persona en una fase cerrada (sin nombres). */
+export interface PhaseFeedback {
+  fase: number;
+  evaluaciones: number;
+  comunicacion: number | null;
+  calidad: number | null;
+  compromiso: number | null;
+  promedio: number | null;
+  confirmaciones: number;
+  fortalezas: string[];
+  mejoras: string[];
+  comentarios: string[];
+  anonima: boolean;
+}
+
+export interface MyFeedback {
+  fases: PhaseFeedback[];
+  fase_en_curso: number | null;
 }
 
 export interface MemberContribution {

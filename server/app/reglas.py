@@ -138,6 +138,8 @@ def evaluacion_public(evaluacion: EvaluacionPares) -> EvaluacionPublic:
         puntuacion=evaluacion.puntuacion,
         confirma_aporte=evaluacion.confirma_aporte,
         comentario=evaluacion.comentario,
+        fortaleza=evaluacion.fortaleza,
+        mejora=evaluacion.mejora,
     )
 
 
