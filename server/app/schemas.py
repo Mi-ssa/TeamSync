@@ -193,6 +193,19 @@ class AgradecimientoPublic(SQLModel):
     creado_en: str
 
 
+class AgradecimientoRecibido(SQLModel):
+    id: int
+    de_nombre: str
+    mensaje: str
+    actividad_nombre: str
+    creado_en: str
+
+
+class MisAgradecimientosResponse(SQLModel):
+    total: int
+    agradecimientos: list[AgradecimientoRecibido]
+
+
 class AgradecimientoCreate(SQLModel):
     mensaje: str = Field(max_length=280)
 

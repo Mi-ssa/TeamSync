@@ -77,3 +77,27 @@ def test_no_cuenta_para_la_contribucion(client: TestClient):
     )
     despues = client.get(f"/proyectos/{proyecto_id}/contribucion", headers=headers[0]).json()
     assert antes["integrantes"] == despues["integrantes"]
+
+
+def test_coleccion_privada(client: TestClient):
+    proyecto_id, (lider, ana, beto), headers = equipo(client, "Lider", "Ana", "Beto")
+    act, avance = avance_aprobado(client, proyecto_id, headers, ana, headers[1])
+    client.patch(f"/avances/{avance['id']}/revisar", json={"estado": "aprobado"}, headers=headers[0])
+    for i in (0, 2):
+        client.post(
+            f"/avances/{avance['id']}/agradecimientos",
+            json={"mensaje": f"Me salvaste con el prototipo, quedó clarísimo ({i})"},
+            headers=headers[i],
+        )
+    url = f"/proyectos/{proyecto_id}/mis-agradecimientos"
+    propia = client.get(url, headers=headers[1]).json()
+    assert propia["total"] == 2
+    assert {g["de_nombre"] for g in propia["agradecimientos"]} == {"Lider", "Beto"}
+    assert propia["agradecimientos"][0]["actividad_nombre"] == "Prototipo"
+    # Cada quien ve solo lo que recibió: el líder no ve los de Ana.
+    assert client.get(url, headers=headers[0]).json() == {"total": 0, "agradecimientos": []}
+    # Alguien de fuera no puede consultarla.
+    from test_iteracion1 import login, register
+
+    register(client, "Extra", "extra@example.com")
+    assert client.get(url, headers=login(client, "extra@example.com")).status_code == 403

@@ -22,6 +22,20 @@ export interface ProgressThanks {
   creado_en: string;
 }
 
+/** Agradecimiento recibido: solo lo ve quien lo recibió. */
+export interface ReceivedThanks {
+  id: number;
+  de_nombre: string;
+  mensaje: string;
+  actividad_nombre: string;
+  creado_en: string;
+}
+
+export interface MyThanks {
+  total: number;
+  agradecimientos: ReceivedThanks[];
+}
+
 export interface Progress {
   id: number;
   actividad_id: number;

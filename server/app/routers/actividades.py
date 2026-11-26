@@ -13,6 +13,8 @@ from app.schemas import (
     ActividadPublic,
     AgradecimientoCreate,
     AgradecimientoPublic,
+    AgradecimientoRecibido,
+    MisAgradecimientosResponse,
     AvanceCreate,
     AvanceDecision,
     AvancePublic,
@@ -259,3 +261,32 @@ def agradecer_avance(
     )
     session.commit()
     return avance_public(session, avance)
+
+
+@router.get("/proyectos/{proyecto_id}/mis-agradecimientos", response_model=MisAgradecimientosResponse)
+def mis_agradecimientos(proyecto_id: int, usuario: CurrentUser, session: SessionDep) -> MisAgradecimientosResponse:
+    """Colección privada: solo los agradecimientos que recibió quien consulta.
+    No se expone a nadie más (ni al líder ni al administrador)."""
+    if session.get(Proyecto, proyecto_id) is None:
+        raise HTTPException(status_code=404, detail="Proyecto no encontrado")
+    get_accepted_participation(session, proyecto_id, usuario.id)
+    filas = session.exec(
+        select(Agradecimiento, Actividad)
+        .join(Avance, Agradecimiento.avance_id == Avance.id)
+        .join(Actividad, Avance.actividad_id == Actividad.id)
+        .where(Actividad.proyecto_id == proyecto_id, Agradecimiento.para_usuario_id == usuario.id)
+        .order_by(Agradecimiento.id.desc())
+    ).all()
+    recibidos = []
+    for gracias, actividad in filas:
+        autor = session.get(Usuario, gracias.de_usuario_id)
+        recibidos.append(
+            AgradecimientoRecibido(
+                id=gracias.id,
+                de_nombre=autor.nombre if autor else "Integrante",
+                mensaje=gracias.mensaje,
+                actividad_nombre=actividad.nombre,
+                creado_en=gracias.creado_en.isoformat(),
+            )
+        )
+    return MisAgradecimientosResponse(total=len(recibidos), agradecimientos=recibidos)
