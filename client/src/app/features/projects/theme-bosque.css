@@ -1,12 +1,12 @@
 /*
- * Tema "bosque + crema" para la página del proyecto.
+ * Tema "bosque + salvia" para la página del proyecto.
  * Solo cambia la apariencia: redefine los tokens dentro de .page.project-detail-page
  * y sobrescribe los colores fijos que no usaban variables.
  * Contrastes verificados (WCAG AA, mínimo 4.5:1) en el comentario de cada token.
  */
 
 .page.project-detail-page {
-  /* Paleta bosque + crema */
+  /* Paleta bosque + salvia neutra */
   --bosque-sidebar: #1b2f24;
   --bosque-sidebar-raised: #24402f; /* recuadro del proyecto en el menú */
   --bosque-sidebar-line: #31523f;
@@ -15,21 +15,22 @@
   --bosque-cream-faint: #b8b3a3; /* textos pequeños del menú: 5.4:1 */
   --bosque-primary: #2d6a4f; /* blanco encima: 6.4:1 */
   --bosque-primary-hover: #24573f;
-  --bosque-card: #fffdf8;
+  --bosque-page: #f6f8f7; /* fondo de página: salvia neutra */
+  --bosque-card: #ffffff;
   --bosque-soft: #d8f3dc;
   --bosque-soft-ink: #1b4332; /* sobre chip suave: 9.4:1 */
-  --bosque-line: #e8e0d0;
-  --bosque-sunken: #faf6ee; /* cajas dentro de tarjetas: el mismo crema de la página */
-  --bosque-track: var(--bosque-line); /* fondo de barras de progreso */
+  --bosque-line: #d7dad9; /* sage-6: bordes sutiles */
+  --bosque-sunken: var(--bosque-page); /* cajas dentro de tarjetas: el mismo fondo de la página */
+  --bosque-track: #e6e9e8; /* sage-4: fondo de barras de progreso */
   --bosque-terracota: #bc6c25; /* solo decorativo (bordes) */
   --bosque-terracota-dark: #9a4e16; /* fondo con texto blanco: 6.0:1 */
 
-  /* Neutros y estados tomados de Radix Colors v3 (escalas sand, amber y red):
+  /* Neutros y estados tomados de Radix Colors v3 (escalas sage, amber y red):
      paso 11 = texto de bajo contraste, paso 12 = texto de alto contraste. */
-  --bosque-ink: #21201c; /* sand-12 · 16.0:1 sobre tarjeta */
-  --bosque-text-2: #63635e; /* sand-11 · 5.9:1 tarjeta / 5.6:1 crema */
-  --bosque-muted: #63635e; /* sand-11: un solo gris para textos secundarios */
-  --bosque-warning-line: #ab6400; /* amber-11 · franja de aviso, 4.3:1 sobre crema */
+  --bosque-ink: #1f2a24; /* 13.9:1 sobre fondo, 14.9:1 sobre tarjeta */
+  --bosque-text-2: #5f6563; /* sage-11 · 6.0:1 tarjeta / 5.6:1 fondo */
+  --bosque-muted: #5f6563; /* sage-11: un solo gris para textos secundarios */
+  --bosque-warning-line: #ab6400; /* amber-11 · franja de aviso, 4.3:1 sobre fondo */
   --bosque-warning-ink: #4f3422; /* amber-12 · texto ámbar, 10.5:1 sobre amber-3 */
   --bosque-warning-soft: #fff7c2; /* amber-3 · solo chips pequeños */
   --bosque-danger: #ce2c31; /* red-11 · 4.5:1 sobre red-3 */
@@ -60,7 +61,7 @@
 
 html:has(.project-detail-page),
 body:has(.project-detail-page) {
-  background: #faf6ee; /* --bosque-cream: las variables del tema viven dentro de la página */
+  background: #f6f8f7; /* --bosque-page: las variables del tema viven dentro de la página */
 }
 
 /* --- Layout: menú pegado al borde izquierdo, bajo la barra superior ------- */
@@ -247,7 +248,7 @@ body:has(.project-detail-page) {
 /* --- Avatares: detalle terracota ----------------------------------------- */
 
 .page.project-detail-page :is(.member-tone-0, .member-tone-1, .member-tone-2, .member-tone-3) {
-  background: var(--bosque-cream);
+  background: var(--bosque-card);
   box-shadow: inset 0 0 0 2px var(--bosque-terracota);
   color: var(--bosque-soft-ink);
 }
@@ -331,7 +332,7 @@ body:has(.project-detail-page) {
 }
 
 .page.project-detail-page .share-bar span {
-  background: var(--bosque-text-2); /* 4.6:1 sobre el fondo de la barra */
+  background: var(--bosque-text-2); /* 4.9:1 sobre el fondo de la barra */
 }
 
 .page.project-detail-page .share-bar.share-ok span {
