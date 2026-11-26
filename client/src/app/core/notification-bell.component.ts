@@ -13,6 +13,8 @@ const ICONS: Record<NotificationKind, string> = {
   fase: '▥',
   declaracion: '✍',
   recordatorio: '⏰',
+  retroalimentacion: '✎',
+  agradecimiento: '♥',
 };
 
 @Component({

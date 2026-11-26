@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
 import { Observable, forkJoin, map, of, switchMap, tap } from 'rxjs';
 import { API_URL } from './auth.service';
-import { Activity, Progress } from './models/activity.model';
+import { Activity, MyThanks, Progress } from './models/activity.model';
 
 @Injectable({ providedIn: 'root' })
 export class ActividadService {
@@ -87,6 +87,22 @@ export class ActividadService {
           this.setAdvances(activityId, [...(this.advances()[activityId] ?? []), advance]),
         ),
       );
+  }
+
+  myThanks(projectId: number): Observable<MyThanks> {
+    return this.http.get<MyThanks>(`${API_URL}/proyectos/${projectId}/mis-agradecimientos`);
+  }
+
+  thank(id: number, activityId: number, mensaje: string): Observable<Progress> {
+    return this.http.post<Progress>(`${API_URL}/avances/${id}/agradecimientos`, { mensaje }).pipe(
+      tap((updated) => {
+        const current = this.advances()[activityId] ?? [];
+        this.setAdvances(
+          activityId,
+          current.map((advance) => (advance.id === id ? updated : advance)),
+        );
+      }),
+    );
   }
 
   reviewAdvance(

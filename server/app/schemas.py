@@ -167,10 +167,12 @@ class AvancePublic(SQLModel):
     comentario_revision: str | None
     creado_en: str
     revisado_en: str | None
+    agradecimientos: list["AgradecimientoPublic"] = []
 
     @classmethod
-    def from_model(cls, avance: Avance) -> "AvancePublic":
+    def from_model(cls, avance: Avance, agradecimientos: list["AgradecimientoPublic"] | None = None) -> "AvancePublic":
         return cls(
+            agradecimientos=agradecimientos or [],
             id=avance.id,
             actividad_id=avance.actividad_id,
             usuario_id=avance.usuario_id,
@@ -181,6 +183,34 @@ class AvancePublic(SQLModel):
             creado_en=avance.creado_en.isoformat(),
             revisado_en=avance.revisado_en.isoformat() if avance.revisado_en else None,
         )
+
+
+class AgradecimientoPublic(SQLModel):
+    id: int
+    de_usuario_id: int
+    de_nombre: str
+    mensaje: str
+    creado_en: str
+
+
+class AgradecimientoRecibido(SQLModel):
+    id: int
+    de_nombre: str
+    mensaje: str
+    actividad_nombre: str
+    creado_en: str
+
+
+class MisAgradecimientosResponse(SQLModel):
+    total: int
+    agradecimientos: list[AgradecimientoRecibido]
+
+
+class AgradecimientoCreate(SQLModel):
+    mensaje: str = Field(max_length=280)
+
+
+AvancePublic.model_rebuild()
 
 
 # --- Iteración 2 -----------------------------------------------------------

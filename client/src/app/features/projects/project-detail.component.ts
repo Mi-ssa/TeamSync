@@ -7,7 +7,7 @@ import { finalize, forkJoin, interval } from 'rxjs';
 import { apiErrorMessage } from '../../core/api-error';
 import { ActividadService } from '../../core/actividad.service';
 import { AuthService } from '../../core/auth.service';
-import { Activity, Progress } from '../../core/models/activity.model';
+import { Activity, MyThanks, Progress } from '../../core/models/activity.model';
 import { Project, ProjectMember } from '../../core/models/project.model';
 import { ProyectoService } from '../../core/proyecto.service';
 import { ContributionPanelComponent } from './contribution-panel.component';
@@ -50,6 +50,11 @@ export class ProjectDetailComponent implements OnInit {
   readonly rejectingAdvance = signal<number | null>(null);
   readonly rejectComment = signal('');
   readonly rejectError = signal('');
+  readonly thankingAdvance = signal<number | null>(null);
+  readonly thankMessage = signal('');
+  readonly thankError = signal('');
+  readonly sendingThanks = signal(false);
+  readonly myThanks = signal<MyThanks | null>(null);
   readonly voteDrafts = signal<Record<number, number>>({});
   readonly voting = signal<number | null>(null);
   readonly refreshContribution = signal(0);
@@ -158,10 +163,14 @@ export class ProjectDetailComponent implements OnInit {
       project: this.projects.getById(this.projectId),
       members: this.projects.getMembers(this.projectId),
       activities: this.activityService.sync(this.projectId),
+      thanks: this.activityService.myThanks(this.projectId),
     })
       .pipe(finalize(() => (this.syncing = false)))
       .subscribe({
-        next: ({ project, members }) => {
+        next: ({ project, members, thanks }) => {
+          if (JSON.stringify(thanks) !== JSON.stringify(this.myThanks())) {
+            this.myThanks.set(thanks);
+          }
           if (JSON.stringify(project) !== JSON.stringify(this.project())) {
             this.project.set(project);
           }
@@ -183,10 +192,12 @@ export class ProjectDetailComponent implements OnInit {
       project: this.projects.getById(id),
       members: this.projects.getMembers(id),
       activities: this.activityService.sync(id),
+      thanks: this.activityService.myThanks(id),
     })
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
-        next: ({ project, members }) => {
+        next: ({ project, members, thanks }) => {
+          this.myThanks.set(thanks);
           this.project.set(project);
           this.members.set(members);
         },
@@ -424,6 +435,44 @@ export class ProjectDetailComponent implements OnInit {
     this.rejectingAdvance.set(null);
     this.rejectComment.set('');
     this.rejectError.set('');
+  }
+
+  /** Se agradece un avance aprobado de otra persona, una vez. */
+  canThank(progress: Progress): boolean {
+    const me = this.auth.user()?.id;
+    return (
+      progress.estado === 'aprobado' &&
+      progress.usuario_id !== me &&
+      !progress.agradecimientos.some((g) => g.de_usuario_id === me)
+    );
+  }
+
+  startThank(progress: Progress): void {
+    this.thankingAdvance.set(progress.id);
+    this.thankMessage.set('');
+    this.thankError.set('');
+  }
+
+  cancelThank(): void {
+    this.thankingAdvance.set(null);
+    this.thankError.set('');
+  }
+
+  sendThanks(progress: Progress, activityId: number): void {
+    const mensaje = this.thankMessage().trim();
+    if (mensaje.length < 15) {
+      this.thankError.set('Cuéntale qué hizo y cómo te ayudó (al menos 15 caracteres).');
+      return;
+    }
+    this.sendingThanks.set(true);
+    this.activityService
+      .thank(progress.id, activityId, mensaje)
+      .pipe(finalize(() => this.sendingThanks.set(false)))
+      .subscribe({
+        next: () => this.cancelThank(),
+        error: (error: unknown) =>
+          this.thankError.set(apiErrorMessage(error, 'No se pudo enviar el agradecimiento.')),
+      });
   }
 
   confirmReject(progress: Progress, activityId: number): void {

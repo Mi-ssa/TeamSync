@@ -109,6 +109,28 @@
           </div>
         </section>
       </div>
+
+      @if (myThanks(); as thanks) {
+        @if (thanks.total) {
+          <section class="panel my-thanks" aria-labelledby="my-thanks-title">
+            <div class="my-thanks-heading">
+              <div>
+                <span class="eyebrow">SOLO TÚ LO VES</span>
+                <h2 id="my-thanks-title">Lo que tu equipo te agradeció</h2>
+              </div>
+              <span class="my-thanks-count">{{ thanks.total }} {{ thanks.total === 1 ? 'agradecimiento' : 'agradecimientos' }} en este proyecto</span>
+            </div>
+            <ul class="my-thanks-list">
+              @for (g of thanks.agradecimientos; track g.id) {
+                <li>
+                  <blockquote>«{{ g.mensaje }}»</blockquote>
+                  <span class="my-thanks-meta"><span class="thanks-icon" aria-hidden="true">♥</span> {{ g.de_nombre }} · por «{{ g.actividad_nombre }}» · {{ g.creado_en | date: 'd MMM' }}</span>
+                </li>
+              }
+            </ul>
+          </section>
+        }
+      }
     }
 
     @if (view() === 'actividades') {
@@ -254,6 +276,38 @@
                           </span>
                           @if (progress.comentario_revision) {
                             <p class="review-comment"><strong>Comentario de la revisión:</strong> {{ progress.comentario_revision }}</p>
+                          }
+                        }
+
+                        @if (progress.agradecimientos.length) {
+                          <ul class="thanks-list" [attr.aria-label]="'Agradecimientos por este avance'">
+                            @for (g of progress.agradecimientos; track g.id) {
+                              <li>
+                                <span class="thanks-icon" aria-hidden="true">♥</span>
+                                <span><strong>{{ g.de_usuario_id === auth.user()?.id ? 'Tú' : g.de_nombre }}</strong> {{ g.de_usuario_id === auth.user()?.id ? 'agradeciste' : 'agradeció' }}: «{{ g.mensaje }}»</span>
+                              </li>
+                            }
+                          </ul>
+                        }
+                        @if (canThank(progress)) {
+                          @if (thankingAdvance() === progress.id) {
+                            <div class="thanks-form">
+                              <div class="field">
+                                <label [for]="'thanks-' + progress.id">¿Qué hizo {{ memberName(progress.usuario_id) }} y cómo te ayudó?</label>
+                                <textarea [id]="'thanks-' + progress.id" maxlength="280" rows="2" placeholder="Ej.: ¡Me salvaste! Tu prototipo nos dejó claras las pantallas y pudimos empezar las pruebas a tiempo." [value]="thankMessage()" (input)="thankMessage.set($any($event.target).value)" [attr.aria-describedby]="'thanks-hint-' + progress.id"></textarea>
+                                <small class="thanks-hint" [id]="'thanks-hint-' + progress.id">Menciona algo concreto que hizo. Un agradecimiento específico se siente más sincero que un «gracias» a secas.</small>
+                                @if (thankError()) {
+                                  <span class="field-error">{{ thankError() }}</span>
+                                }
+                              </div>
+                              <div class="review-actions">
+                                <span>{{ thankMessage().trim().length }}/280</span>
+                                <button class="button button-secondary button-small" type="button" [disabled]="sendingThanks()" (click)="cancelThank()">Cancelar</button>
+                                <button class="button button-small" type="button" [disabled]="sendingThanks()" (click)="sendThanks(progress, activity.id)">{{ sendingThanks() ? 'Enviando…' : 'Enviar agradecimiento' }}</button>
+                              </div>
+                            </div>
+                          } @else {
+                            <button class="thanks-trigger" type="button" (click)="startThank(progress)"><span class="thanks-icon" aria-hidden="true">♥</span> Agradecer a {{ memberName(progress.usuario_id) }}</button>
                           }
                         }
                       </div>

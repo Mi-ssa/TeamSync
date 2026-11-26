@@ -129,3 +129,17 @@ class Notificacion(SQLModel, table=True):
     # Evita duplicados: un recordatorio con la misma clave no se repite.
     clave: str | None = Field(default=None, index=True)
     creado_en: datetime = Field(default_factory=utc_now)
+
+
+class Agradecimiento(SQLModel, table=True):
+    """Agradecimiento de un integrante por un avance aprobado de otro.
+
+    No suma puntos ni se cuenta en ningún lado: solo se muestra en el avance.
+    """
+
+    id: int | None = Field(default=None, primary_key=True)
+    avance_id: int = Field(foreign_key="avance.id", index=True)
+    de_usuario_id: int = Field(foreign_key="usuario.id", index=True)
+    para_usuario_id: int = Field(foreign_key="usuario.id", index=True)
+    mensaje: str
+    creado_en: datetime = Field(default_factory=utc_now)
