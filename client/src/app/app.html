@@ -11,6 +11,7 @@
           @if (user.es_admin) {
             <a class="nav-link" routerLink="/admin">Administración</a>
           }
+          <app-notification-bell />
           <span class="user-chip"><span class="user-avatar">{{ user.nombre.charAt(0).toUpperCase() }}</span>{{ user.nombre }}</span>
           <button class="button button-quiet button-small" type="button" (click)="auth.logout()">Salir</button>
         </div>

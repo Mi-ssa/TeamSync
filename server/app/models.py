@@ -112,3 +112,18 @@ class Configuracion(SQLModel, table=True):
     porcentaje_minimo: float = Field(default=70, ge=0, le=100)
     dias_inactividad: int = Field(default=5, ge=1)
     actualizado_en: datetime = Field(default_factory=utc_now)
+
+
+class Notificacion(SQLModel, table=True):
+    """Aviso para un usuario: eventos del equipo y recordatorios."""
+
+    id: int | None = Field(default=None, primary_key=True)
+    usuario_id: int = Field(foreign_key="usuario.id", index=True)
+    tipo: str  # invitacion | votacion | revision | resultado | checkin | fase | declaracion | recordatorio
+    titulo: str
+    mensaje: str
+    enlace: str = "/dashboard"
+    leida: bool = False
+    # Evita duplicados: un recordatorio con la misma clave no se repite.
+    clave: str | None = Field(default=None, index=True)
+    creado_en: datetime = Field(default_factory=utc_now)

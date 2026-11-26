@@ -299,3 +299,18 @@ class ReporteResponse(SQLModel):
     porcentaje_minimo: float
     dias_inactividad: int
     detalle: list[ReporteProyecto]
+
+
+class NotificacionPublic(SQLModel):
+    id: int
+    tipo: str
+    titulo: str
+    mensaje: str
+    enlace: str
+    leida: bool
+    creado_en: str
+
+
+class NotificacionesResponse(SQLModel):
+    no_leidas: int
+    notificaciones: list[NotificacionPublic]

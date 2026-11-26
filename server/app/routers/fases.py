@@ -16,6 +16,7 @@ from app.reglas import (
     nombre_usuario,
     puntos_validados_totales,
 )
+from app.notificaciones import enlace_proyecto, ids_miembros, notificar_varios
 from app.routers.proyectos import get_accepted_participation
 from app.schemas import (
     ContribucionResponse,
@@ -103,6 +104,14 @@ def cerrar_fase(proyecto_id: int, usuario: CurrentUser, session: SessionDep) -> 
     cerrar_fase_actual(session, proyecto)
     proyecto.fase_actual += 1
     session.add(proyecto)
+    notificar_varios(
+        session,
+        ids_miembros(session, proyecto_id, excepto=usuario.id),
+        "fase",
+        f"Se cerró la fase {proyecto.fase_actual - 1} de «{proyecto.nombre}»",
+        f"Ya trabajan en la fase {proyecto.fase_actual}.",
+        enlace_proyecto(proyecto_id),
+    )
     session.commit()
     session.refresh(proyecto)
     return ProyectoPublic.from_model(proyecto)
@@ -128,6 +137,24 @@ def concluir_proyecto(proyecto_id: int, usuario: CurrentUser, session: SessionDe
     proyecto.estado = "concluido"
     proyecto.concluido_en = datetime.now(timezone.utc)
     session.add(proyecto)
+    con_aporte = puntos_validados_totales(session, proyecto_id)
+    miembros = ids_miembros(session, proyecto_id)
+    notificar_varios(
+        session,
+        [m for m in miembros if con_aporte.get(m, 0) > 0],
+        "declaracion",
+        f"Firma la declaración de «{proyecto.nombre}»",
+        "El proyecto concluyó. Revisa tu contribución y firma la declaración.",
+        enlace_proyecto(proyecto_id, "contribuciones"),
+    )
+    notificar_varios(
+        session,
+        [m for m in miembros if con_aporte.get(m, 0) <= 0],
+        "declaracion",
+        f"«{proyecto.nombre}» concluyó",
+        "No tienes aporte validado, así que no puedes firmar la declaración.",
+        enlace_proyecto(proyecto_id, "contribuciones"),
+    )
     session.commit()
     session.refresh(proyecto)
     return ProyectoPublic.from_model(proyecto)

@@ -5,6 +5,7 @@ from sqlmodel import select
 
 from app.auth import CurrentUser, SessionDep
 from app.models import Actividad, Participacion, Proyecto, Usuario, VotoPuntos
+from app.notificaciones import enlace_proyecto, ids_miembros, notificar, notificar_varios
 from app.reglas import actividad_public, exigir_proyecto_activo, miembros_aceptados
 from app.schemas import (
     ActividadCreate,
@@ -108,6 +109,14 @@ def invitar_integrante(
 
     participacion = Participacion(proyecto_id=proyecto_id, usuario_id=invitado.id)
     session.add(participacion)
+    notificar(
+        session,
+        invitado.id,
+        "invitacion",
+        f"Te invitaron a «{proyecto.nombre}»",
+        f"{usuario.nombre} te invitó a colaborar. Acepta o rechaza la invitación en tu tablero.",
+        "/dashboard",
+    )
     session.commit()
     session.refresh(participacion)
     return InvitacionResponse.from_model(participacion, proyecto.nombre)
@@ -128,6 +137,15 @@ def responder_invitacion(
     participacion.estado = "aceptada" if payload.respuesta == "aceptar" else "rechazada"
     participacion.respondido_en = datetime.now(timezone.utc)
     session.add(participacion)
+    if participacion.estado == "aceptada":
+        notificar(
+            session,
+            proyecto.creado_por_id,
+            "equipo",
+            f"{usuario.nombre} se unió a «{proyecto.nombre}»",
+            "Ya puedes asignarle actividades.",
+            enlace_proyecto(proyecto.id, "integrantes"),
+        )
     session.commit()
     session.refresh(participacion)
     return InvitacionResponse.from_model(participacion, proyecto.nombre)
@@ -209,6 +227,23 @@ def crear_actividad(
     session.flush()
     if en_equipo:
         session.add(VotoPuntos(actividad_id=actividad.id, usuario_id=usuario.id, puntos=payload.puntos_acordados))
+        notificar_varios(
+            session,
+            ids_miembros(session, proyecto_id, excepto=usuario.id),
+            "votacion",
+            f"Vota los puntos de «{actividad.nombre}»",
+            f"{usuario.nombre} propuso {payload.puntos_acordados:g} puntos en «{proyecto.nombre}». Da tu voto.",
+            enlace_proyecto(proyecto_id, "actividades"),
+        )
+    elif actividad.responsable_id != usuario.id:
+        notificar(
+            session,
+            actividad.responsable_id,
+            "actividad",
+            f"Te asignaron «{actividad.nombre}»",
+            f"Vale {actividad.puntos_acordados:g} puntos en «{proyecto.nombre}».",
+            enlace_proyecto(proyecto_id, "actividades"),
+        )
     session.commit()
     session.refresh(actividad)
     return actividad_public(session, actividad, usuario.id)

@@ -100,6 +100,16 @@ def acordar_puntos(session: Session, actividad: Actividad) -> None:
         actividad.puntos_acordados = round(float(median(votos)), 2)
     actividad.estado = "pendiente"
     session.add(actividad)
+    from app.notificaciones import enlace_proyecto, notificar  # import local: evita ciclo
+
+    notificar(
+        session,
+        actividad.responsable_id,
+        "actividad",
+        f"Ya pueden trabajar en «{actividad.nombre}»",
+        f"El equipo acordó {actividad.puntos_acordados:g} puntos. Cuando avances, envía tu avance.",
+        enlace_proyecto(actividad.proyecto_id, "actividades"),
+    )
 
 
 # --- Contribución y parte justa (historias 6 y 7) ---------------------------
