@@ -124,10 +124,23 @@ def test_contribucion_check_in_cierre_y_firma(client: TestClient):
     a2 = actividad(client, proyecto_id, headers[0], ana["id"], 4, "De Ana")
     votar_todos(client, a1, headers, 4)
     votar_todos(client, a2, headers, 4)
+
+    # Sin trabajo aprobado no hay nada que validar: el check-in sigue cerrado.
+    vacio = client.get(f"/proyectos/{proyecto_id}/contribucion", headers=headers[0]).json()
+    assert vacio["checkin_abierto"] is False
+    assert vacio["pendientes_cierre"][0] == "Todavía no hay actividades aprobadas en esta fase"
+    temprano = client.post(
+        f"/proyectos/{proyecto_id}/evaluaciones",
+        json={"evaluado_id": ana["id"], "comunicacion": 3, "calidad": 3, "compromiso": 3},
+        headers=headers[0],
+    )
+    assert temprano.status_code == 409
+
     completar(client, a1, headers[0], headers[1])
     completar(client, a2, headers[1], headers[0])
 
     contribucion = client.get(f"/proyectos/{proyecto_id}/contribucion", headers=headers[0]).json()
+    assert contribucion["checkin_abierto"] is True
     assert contribucion["parte_justa"] == 4
     assert all(f["puntos_aprobados"] == 4 and f["puntos_validados"] == 0 for f in contribucion["integrantes"])
     assert not contribucion["puede_cerrar"]

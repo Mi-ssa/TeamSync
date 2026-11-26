@@ -234,6 +234,7 @@ class ContribucionResponse(SQLModel):
     parte_justa: float
     integrantes: list[ContribucionIntegrante]
     mis_evaluaciones: list[EvaluacionPublic]
+    checkin_abierto: bool = False
     aviso: str | None
     puede_cerrar: bool
     pendientes_cierre: list[str]

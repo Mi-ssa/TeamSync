@@ -2,7 +2,7 @@ import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angula
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DatePipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize, forkJoin, interval } from 'rxjs';
 import { apiErrorMessage } from '../../core/api-error';
 import { ActividadService } from '../../core/actividad.service';
@@ -11,6 +11,14 @@ import { Activity, Progress } from '../../core/models/activity.model';
 import { Project, ProjectMember } from '../../core/models/project.model';
 import { ProyectoService } from '../../core/proyecto.service';
 import { ContributionPanelComponent } from './contribution-panel.component';
+
+type ProjectView = 'resumen' | 'actividades' | 'integrantes' | 'contribuciones';
+
+interface AttentionItem {
+  key: string;
+  icon: string;
+  text: string;
+}
 
 @Component({
   selector: 'app-project-detail',
@@ -21,6 +29,7 @@ import { ContributionPanelComponent } from './contribution-panel.component';
 })
 export class ProjectDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   private syncing = false;
   private readonly fb = inject(FormBuilder);
@@ -44,6 +53,41 @@ export class ProjectDetailComponent implements OnInit {
   readonly voteDrafts = signal<Record<number, number>>({});
   readonly voting = signal<number | null>(null);
   readonly refreshContribution = signal(0);
+  readonly showInvite = signal(false);
+  readonly view = signal<ProjectView>('resumen');
+  readonly views: { id: ProjectView; label: string; icon: string }[] = [
+    { id: 'resumen', label: 'Resumen', icon: '⌂' },
+    { id: 'actividades', label: 'Actividades', icon: '☷' },
+    { id: 'integrantes', label: 'Integrantes', icon: '♧' },
+    { id: 'contribuciones', label: 'Contribuciones / Cierre de fase', icon: '▥' },
+  ];
+  /** Pendientes de la persona: votos, revisiones y avances por registrar. */
+  readonly attention = computed<AttentionItem[]>(() => {
+    const me = this.auth.user()?.id;
+    const items: AttentionItem[] = [];
+    if (this.concluded()) {
+      return items;
+    }
+    for (const activity of this.activityService.activities()) {
+      const advances = this.activityService.advances()[activity.id] ?? [];
+      if (activity.estado === 'votacion' && activity.mi_voto === null) {
+        items.push({ key: `v${activity.id}`, icon: '✦', text: `Vota los puntos de «${activity.nombre}»` });
+      }
+      for (const progress of advances) {
+        if (this.canReview(progress)) {
+          items.push({
+            key: `r${progress.id}`,
+            icon: '✓',
+            text: `Revisa el avance de ${this.memberName(progress.usuario_id)} en «${activity.nombre}»`,
+          });
+        }
+      }
+      if (this.canSubmitAdvance(activity) && activity.responsable_id === me) {
+        items.push({ key: `a${activity.id}`, icon: '↗', text: `Registra tu avance en «${activity.nombre}»` });
+      }
+    }
+    return items;
+  });
   readonly isLeader = computed(
     () => this.project()?.creado_por_id === this.auth.user()?.id,
   );
@@ -88,6 +132,10 @@ export class ProjectDetailComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    this.route.queryParamMap.subscribe((query) => {
+      const requested = query.get('vista') as ProjectView | null;
+      this.view.set(this.views.some((v) => v.id === requested) ? requested! : 'resumen');
+    });
     this.route.paramMap.subscribe((params) => {
       const id = Number(params.get('id'));
       if (Number.isInteger(id) && id > 0) {
@@ -147,10 +195,27 @@ export class ProjectDetailComponent implements OnInit {
       });
   }
 
-  /** Desplaza a una sección sin que el <base href> mande a otra ruta. */
-  scrollTo(id: string, event: Event): void {
-    event.preventDefault();
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  go(view: ProjectView): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { vista: view === 'resumen' ? null : view },
+      replaceUrl: true,
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  countByState(estado: Activity['estado']): number {
+    return this.activityService.activities().filter((activity) => activity.estado === estado).length;
+  }
+
+  memberStats(memberId: number): { total: number; done: number; points: number } {
+    const mine = this.activityService.activities().filter((a) => a.responsable_id === memberId);
+    const done = mine.filter((a) => a.estado === 'completada');
+    return {
+      total: mine.length,
+      done: done.length,
+      points: done.reduce((total, a) => total + a.puntos_acordados, 0),
+    };
   }
 
   memberName(id: number): string {

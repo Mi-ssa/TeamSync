@@ -42,6 +42,7 @@ export interface ContributionSummary {
   parte_justa: number;
   integrantes: MemberContribution[];
   mis_evaluaciones: PeerEvaluation[];
+  checkin_abierto: boolean;
   aviso: string | null;
   puede_cerrar: boolean;
   pendientes_cierre: string[];

@@ -2,7 +2,7 @@
   align-items: start;
   display: grid;
   gap: 20px;
-  grid-template-columns: 230px minmax(0, 1fr);
+  grid-template-columns: 270px minmax(0, 1fr);
 }
 
 .project-sidebar {
@@ -12,8 +12,8 @@
   color: #aab4c5;
   display: flex;
   flex-direction: column;
-  min-height: 510px;
-  padding: 16px 13px;
+  min-height: calc(100vh - 130px);
+  padding: 20px 16px;
   position: sticky;
   top: 91px;
 }
@@ -823,8 +823,10 @@
   font-weight: 400;
 }
 
-.project-detail-page {
-  max-width: 1320px;
+.page.project-detail-page {
+  max-width: 1760px;
+  padding-left: 32px;
+  padding-right: 32px;
 }
 
 @media (max-width: 880px) {

@@ -7,6 +7,7 @@ from app.auth import CurrentUser, SessionDep
 from app.models import Actividad, Contribucion, EvaluacionPares, FirmaDeclaracion
 from app.reglas import (
     cerrar_fase_actual,
+    checkin_abierto,
     contribucion_response,
     evaluacion_public,
     exigir_proyecto_activo,
@@ -50,6 +51,11 @@ def evaluar_par(
     proyecto = get_proyecto(session, proyecto_id)
     get_accepted_participation(session, proyecto_id, usuario.id)
     exigir_proyecto_activo(proyecto)
+    if not checkin_abierto(session, proyecto_id, proyecto.fase_actual):
+        raise HTTPException(
+            status_code=409,
+            detail="El check-in se abre cuando hay al menos una actividad aprobada en la fase",
+        )
     if payload.evaluado_id == usuario.id:
         raise HTTPException(status_code=400, detail="No puedes evaluarte a ti mismo")
     if payload.evaluado_id not in {m.usuario_id for m in miembros_aceptados(session, proyecto_id)}:

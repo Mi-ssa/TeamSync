@@ -49,14 +49,20 @@
                 <td>{{ row.puntos_aprobados }} pts</td>
                 <td>{{ row.puntos_validados }} pts <small>({{ row.confirmaciones }} confirmaciones)</small></td>
                 <td>
+                  @if (!data.checkin_abierto) {
+                    <span class="share-empty">—</span>
+                  } @else {
                   <div class="share-bar" [class.share-ok]="row.cumple" role="img" [attr.aria-label]="row.porcentaje + '% de su parte justa'">
                     <span [style.width.%]="row.porcentaje > 100 ? 100 : row.porcentaje"></span>
                     <i [style.left.%]="data.porcentaje_minimo"></i>
                   </div>
                   <b class="share-value" [class.share-ok]="row.cumple">{{ row.porcentaje }}%</b>
+                  }
                 </td>
                 <td>
-                  @if (row.evaluaciones_pendientes === 0) {
+                  @if (!data.checkin_abierto) {
+                    <span class="share-empty">Aún no abre</span>
+                  } @else if (row.evaluaciones_pendientes === 0) {
                     <span class="status status-approved">Completo</span>
                   } @else {
                     <span class="status status-pending">Faltan {{ row.evaluaciones_pendientes }}</span>
@@ -74,10 +80,20 @@
         <p class="contribution-hint">Tu resultado es privado: solo tú y el líder lo ven. Tus puntos cuentan como validados cuando la mayoría de tus compañeros confirma tu aporte en su check-in.</p>
       }
 
-      @if (peers().length) {
+      @if (peers().length && !data.checkin_abierto) {
+        <div class="check-in-closed">
+          <strong>El check-in de la fase {{ data.fase }} todavía no abre</strong>
+          <p>En el check-in cada integrante confirma que los avances aprobados de sus compañeros reflejan lo que realmente aportaron, y los califica en comunicación, calidad y compromiso. Esa confirmación es la que convierte los puntos aprobados en <b>puntos validados</b>. Se abre en cuanto haya al menos una actividad aprobada en la fase.</p>
+        </div>
+      }
+
+      @if (peers().length && data.checkin_abierto) {
         <div class="check-in">
           <div class="check-in-heading">
-            <h3>Tu check-in de la fase {{ data.fase }}</h3>
+            <div>
+              <h3>Tu check-in de la fase {{ data.fase }}</h3>
+              <p>Confirma si los avances aprobados de cada compañero reflejan lo que realmente aportó.</p>
+            </div>
             <span>{{ checkInDone() }} de {{ peers().length }} compañeros evaluados</span>
           </div>
           @for (peer of peers(); track peer.id) {

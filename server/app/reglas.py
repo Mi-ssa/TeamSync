@@ -145,6 +145,8 @@ def calcular_contribucion(
     puntos_fase = sum(a.puntos_acordados for a in actividades if a.estado != "votacion")
     parte_justa = puntos_fase / len(miembros) if miembros else 0
     evaluaciones = evaluaciones_fase(session, proyecto.id, fase)
+    # El check-in valida trabajo hecho: solo se abre cuando ya hay algo aprobado en la fase.
+    checkin_abierto = any(a.estado == "completada" for a in actividades)
 
     filas: list[ContribucionIntegrante] = []
     pendientes: list[str] = []
@@ -185,15 +187,30 @@ def calcular_contribucion(
             )
         )
         motivos = []
-        if faltan > 0:
+        if faltan > 0 and checkin_abierto:
             motivos.append(f"le falta evaluar a {faltan} compañero{'s' if faltan != 1 else ''}")
-        if not cumple:
+        if not cumple and checkin_abierto:
             motivos.append(f"lleva {porcentaje:g}% de su parte justa (mínimo {minimo:g}%)")
         if motivos:
             pendientes.append(f"{nombre}: " + " y ".join(motivos))
+    if not checkin_abierto:
+        pendientes.insert(0, "Todavía no hay actividades aprobadas en esta fase")
     if any(a.estado == "votacion" for a in actividades):
         pendientes.append("Hay actividades con la votación de puntos abierta")
     return puntos_fase, parte_justa, minimo, filas, pendientes
+
+
+def checkin_abierto(session: Session, proyecto_id: int, fase: int) -> bool:
+    return (
+        session.exec(
+            select(Actividad).where(
+                Actividad.proyecto_id == proyecto_id,
+                Actividad.fase == fase,
+                Actividad.estado == "completada",
+            )
+        ).first()
+        is not None
+    )
 
 
 def contribucion_response(
@@ -203,7 +220,8 @@ def contribucion_response(
     puntos_fase, parte_justa, minimo, filas, pendientes = calcular_contribucion(session, proyecto, fase)
     propia = next((f for f in filas if f.usuario_id == usuario_id), None)
     aviso = None
-    if propia and not propia.cumple and puntos_fase > 0:
+    abierto = checkin_abierto(session, proyecto.id, fase)
+    if propia and not propia.cumple and abierto:
         aviso = (
             f"Aviso privado: tu aporte validado es {propia.porcentaje}% de tu parte justa "
             f"({round(parte_justa, 2):g} pts). El mínimo para cerrar la fase es {minimo:g}%."
@@ -223,6 +241,7 @@ def contribucion_response(
         parte_justa=round(parte_justa, 2),
         integrantes=visibles,
         mis_evaluaciones=mis,
+        checkin_abierto=abierto,
         aviso=aviso,
         puede_cerrar=puntos_fase > 0 and not pendientes and proyecto.estado == "activo",
         pendientes_cierre=pendientes if rol == "lider" else [],
