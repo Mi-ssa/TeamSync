@@ -1,10 +1,9 @@
 .welcome-banner {
   align-items: center;
   background:
-    radial-gradient(circle at 84% 42%, rgba(103, 88, 232, 0.3), transparent 29%),
-    linear-gradient(110deg, #18223d 0%, #202e50 70%, #25345a 100%);
-  border: 1px solid #2d3d60;
-  border-radius: 14px;
+    var(--navy);
+  border: 1px solid var(--navy-line);
+  border-radius: 6px;
   display: flex;
   justify-content: space-between;
   margin-bottom: 25px;
@@ -26,12 +25,16 @@
   margin-bottom: 9px;
 }
 
+.welcome-banner .eyebrow {
+  color: var(--on-dark-accent); /* 8.4:1 sobre el banner oscuro */
+}
+
 .welcome-copy h1 span {
-  color: #5ee4bc;
+  color: var(--on-dark-accent);
 }
 
 .welcome-copy p {
-  color: #b7c1d2;
+  color: var(--on-dark-muted);
   font-size: 13px;
   margin-bottom: 0;
 }
@@ -56,10 +59,10 @@
 
 .deco-check {
   align-items: center;
-  background: linear-gradient(145deg, #6758e8, #5546d7);
+  background: var(--primary);
   border: 9px solid rgba(255, 255, 255, 0.52);
   border-radius: 26px;
-  box-shadow: 0 15px 32px rgba(10, 15, 40, 0.3);
+  box-shadow: none;
   color: white;
   display: flex;
   font-size: 40px;
@@ -73,8 +76,8 @@
 }
 
 .deco-dot {
-  background: #5ee4bc;
-  border: 5px solid #25345a;
+  background: var(--on-dark-accent);
+  border: 5px solid var(--navy-raised);
   border-radius: 50%;
   height: 31px;
   position: absolute;
@@ -92,7 +95,7 @@
 }
 
 .deco-star {
-  color: #a99fff;
+  color: var(--on-dark-accent);
   font-size: 25px;
   position: absolute;
   right: 17px;
@@ -121,7 +124,7 @@
 .invitation-symbol {
   align-items: center;
   background: var(--amber-light);
-  border-radius: 11px;
+  border-radius: 6px;
   color: var(--amber);
   display: flex;
   font-size: 17px;
@@ -132,12 +135,12 @@
 }
 
 .invitation-list {
-  border-top: 1px solid #edf0f4;
+  border-top: 1px solid var(--line);
 }
 
 .invitation-row {
   align-items: center;
-  border-bottom: 1px solid #edf0f4;
+  border-bottom: 1px solid var(--line);
   display: flex;
   gap: 13px;
   padding: 11px 0;
@@ -151,7 +154,7 @@
 .invitation-project-mark {
   align-items: center;
   background: var(--lavender);
-  border-radius: 8px;
+  border-radius: 6px;
   color: var(--primary);
   display: flex;
   flex: 0 0 39px;
@@ -217,8 +220,8 @@
 }
 
 .project-card:hover {
-  border-color: #c8c2ff;
-  box-shadow: 0 12px 30px rgba(23, 33, 59, 0.1);
+  border-color: var(--primary);
+  box-shadow: none;
   transform: translateY(-3px);
 }
 
@@ -231,7 +234,7 @@
 
 .project-icon {
   align-items: center;
-  border-radius: 12px;
+  border-radius: 6px;
   display: flex;
   font-size: 17px;
   font-weight: 700;
@@ -241,47 +244,47 @@
 }
 
 .project-icon.tone-0 {
-  background: #ebe9ff;
-  color: #5546d7;
+  background: var(--lavender);
+  color: var(--primary-dark);
 }
 
 .project-icon.tone-1 {
-  background: #d1fae5;
-  color: #047857;
+  background: var(--green-light);
+  color: var(--green);
 }
 
 .project-icon.tone-2 {
-  background: #fff0d5;
-  color: #a16207;
+  background: var(--amber-light);
+  color: var(--amber);
 }
 
 .project-icon.tone-3 {
-  background: #fee2e2;
-  color: #b91c1c;
+  background: var(--red-light);
+  color: var(--red);
 }
 
 .tone-0 {
-  background: #ebe9ff;
-  color: #5546d7;
+  background: var(--lavender);
+  color: var(--primary-dark);
 }
 
 .tone-1 {
-  background: #d1fae5;
-  color: #047857;
+  background: var(--green-light);
+  color: var(--green);
 }
 
 .tone-2 {
-  background: #fff0d5;
-  color: #a16207;
+  background: var(--amber-light);
+  color: var(--amber);
 }
 
 .tone-3 {
-  background: #fee2e2;
-  color: #b91c1c;
+  background: var(--red-light);
+  color: var(--red);
 }
 
 .project-arrow {
-  color: #a4a2b3;
+  color: var(--muted);
   font-size: 17px;
 }
 
@@ -304,8 +307,8 @@
 
 .project-card-bottom {
   align-items: center;
-  border-top: 1px solid #edf0f4;
-  color: #64748b;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
   display: flex;
   font-size: 8px;
   justify-content: space-between;
@@ -338,8 +341,8 @@
 .new-project-card {
   align-items: center;
   background: transparent;
-  border: 1px dashed #cbd5e1;
-  border-radius: 12px;
+  border: 1px dashed #cbcfcd;
+  border-radius: 6px;
   color: var(--muted);
   display: flex;
   flex-direction: column;
@@ -350,8 +353,8 @@
 }
 
 .new-project-card:hover {
-  background: #f1f0ff;
-  border-color: #a99fff;
+  background: var(--subtle);
+  border-color: var(--primary);
 }
 
 .new-project-plus {
@@ -389,7 +392,7 @@
 
 .spinner {
   animation: spin 0.8s linear infinite;
-  border: 2px solid #e2e8f0;
+  border: 2px solid var(--line);
   border-radius: 50%;
   border-top-color: var(--mint);
   height: 18px;
@@ -402,7 +405,7 @@
 }
 
 .optional {
-  color: #a1a0af;
+  color: var(--muted);
   font-weight: 400;
 }
 

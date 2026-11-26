@@ -7,22 +7,37 @@
 
 :root {
   color-scheme: light;
-  --primary: #6758e8;
-  --primary-dark: #5546d7;
-  --navy: #17213b;
-  --navy-deep: #18223d;
-  --lavender: #ebe9ff;
-  --ink: #1e293b;
-  --muted: #64748b;
-  --line: #e2e8f0;
-  --canvas: #f5f7fb;
-  --mint: #10b981;
-  --green: #059669;
-  --green-light: #d1fae5;
-  --amber: #a16207;
-  --amber-light: #fff0d5;
-  --red: #b91c1c;
-  --red-light: #fee2e2;
+  /* Paleta "bosque + salvia". Neutros y estados: Radix Colors v3 (sage, amber, red).
+     Contraste AA verificado: texto 4.5:1, bordes de foco y gráficos 3:1. */
+  --primary: #2d6a4f; /* botones y activo · blanco encima 6.4:1 */
+  --primary-dark: #1b4332; /* hover y texto sobre chip suave 9.4:1 */
+  --navy: #1b2f24; /* superficies oscuras (menú, bandas) */
+  --navy-deep: #1b2f24;
+  --navy-raised: #24402f; /* elementos sobre superficie oscura */
+  --navy-line: #31523f; /* bordes sobre superficie oscura */
+  --on-dark: #faf6ee; /* texto sobre oscuro 13.2:1 */
+  --on-dark-muted: #d4cfc2; /* 9.1:1 */
+  --on-dark-faint: #b8b3a3; /* 6.8:1 */
+  --on-dark-accent: #95d5b2; /* acento verde sobre oscuro 8.4:1 */
+  --lavender: #d8f3dc; /* chips y estados suaves */
+  --ink: #1f2a24; /* 13.9:1 sobre fondo */
+  --muted: #5f6563; /* sage-11 · 5.6:1 fondo / 6.0:1 blanco */
+  --line: #d7dad9; /* sage-6 */
+  --line-strong: #b8bcba; /* sage-8 */
+  --track: #e6e9e8; /* sage-4 */
+  --subtle: #eef1f0; /* sage-3 */
+  --canvas: #f6f8f7; /* fondo salvia neutra */
+  --mint: #2d6a4f;
+  --green: #2d6a4f; /* éxito = verde de marca */
+  --green-light: #d8f3dc;
+  --amber: #4f3422; /* amber-12 · 10.9:1 sobre amber-2 */
+  --amber-light: #fefbe9; /* amber-2 */
+  --amber-line: #ab6400; /* amber-11 · franjas */
+  --red: #ce2c31; /* red-11 · 4.5:1 sobre red-3 */
+  --red-light: #feebec; /* red-3 */
+  --red-line: #fdbdbe; /* red-6 */
+  --terracota: #bc6c25; /* solo decorativo */
+  --terracota-dark: #9a4e16; /* con texto blanco 6.0:1 */
   font-family: 'Plus Jakarta Sans', sans-serif;
   color: var(--ink);
   background: var(--canvas);
@@ -80,7 +95,7 @@ h3 {
 .brand-mark {
   align-items: flex-end;
   background: var(--navy-deep);
-  border-radius: 9px;
+  border-radius: 6px;
   display: inline-flex;
   gap: 3px;
   height: 32px;
@@ -90,7 +105,7 @@ h3 {
 }
 
 .brand-mark i {
-  background: var(--mint);
+  background: var(--on-dark-accent);
   border-radius: 2px;
   display: block;
   height: 8px;
@@ -144,7 +159,7 @@ h3 {
   align-items: center;
   background: var(--primary);
   border: 1px solid var(--primary);
-  border-radius: 10px;
+  border-radius: 6px;
   color: white;
   display: inline-flex;
   font-size: 13px;
@@ -177,7 +192,7 @@ h3 {
 .button-secondary:hover,
 .button-quiet:hover {
   background: var(--lavender);
-  border-color: #d7d2ff;
+  border-color: var(--line);
   color: var(--primary-dark);
 }
 
@@ -189,13 +204,13 @@ h3 {
 
 .button-danger {
   background: white;
-  border-color: #f1cdd1;
+  border-color: var(--red-line);
   color: var(--red);
 }
 
 .button-danger:hover {
   background: var(--red-light);
-  border-color: #eab9bf;
+  border-color: var(--red-line);
 }
 
 .button-small {
@@ -207,8 +222,8 @@ h3 {
 .card {
   background: white;
   border: 1px solid var(--line);
-  border-radius: 12px;
-  box-shadow: 0 5px 20px rgba(23, 33, 59, 0.035);
+  border-radius: 6px;
+  box-shadow: none;
 }
 
 .panel {
@@ -253,7 +268,7 @@ h3 {
 }
 
 .field label {
-  color: #475569;
+  color: var(--muted);
   font-size: 12px;
   font-weight: 700;
 }
@@ -262,8 +277,8 @@ h3 {
 .field textarea,
 .field select {
   background: #fff;
-  border: 1px solid #dbe2ea;
-  border-radius: 9px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
   color: var(--ink);
   font-size: 14px;
   outline: none;
@@ -275,8 +290,8 @@ h3 {
 .field input:focus,
 .field textarea:focus,
 .field select:focus {
-  border-color: #897cf4;
-  box-shadow: 0 0 0 3px rgba(103, 88, 232, 0.12);
+  border-color: var(--primary);
+  box-shadow: none;
 }
 
 .field textarea {
@@ -296,17 +311,17 @@ h3 {
 
 .error-message {
   background: var(--red-light);
-  border: 1px solid #f5d6d9;
-  border-radius: 9px;
-  color: #a43846;
+  border: 1px solid var(--red-line);
+  border-radius: 6px;
+  color: var(--red);
   font-size: 13px;
   padding: 11px 13px;
 }
 
 .success-message {
   background: var(--green-light);
-  border-radius: 9px;
-  color: #226b55;
+  border-radius: 6px;
+  color: var(--green);
   font-size: 13px;
   padding: 11px 13px;
 }
@@ -323,7 +338,7 @@ h3 {
 .empty-icon {
   align-items: center;
   background: var(--lavender);
-  border-radius: 16px;
+  border-radius: 6px;
   color: var(--primary);
   display: flex;
   font-size: 23px;
@@ -347,7 +362,7 @@ h3 {
 
 .modal-backdrop {
   align-items: center;
-  background: rgba(15, 23, 42, 0.56);
+  background: rgba(27, 47, 36, 0.56);
   display: flex;
   inset: 0;
   justify-content: center;
@@ -358,8 +373,8 @@ h3 {
 
 .modal {
   background: white;
-  border-radius: 17px;
-  box-shadow: 0 22px 70px rgba(15, 23, 42, 0.22);
+  border-radius: 6px;
+  box-shadow: none;
   max-width: 460px;
   padding: 22px;
   width: 100%;
@@ -433,7 +448,7 @@ a:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
 select:focus-visible {
-  outline: 3px solid rgba(103, 88, 232, 0.35);
+  outline: 3px solid var(--primary);
   outline-offset: 2px;
 }
 

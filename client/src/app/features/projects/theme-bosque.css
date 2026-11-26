@@ -32,36 +32,11 @@
   --bosque-muted: #5f6563; /* sage-11: un solo gris para textos secundarios */
   --bosque-warning-line: #ab6400; /* amber-11 · franja de aviso, 4.3:1 sobre fondo */
   --bosque-warning-ink: #4f3422; /* amber-12 · texto ámbar, 10.5:1 sobre amber-3 */
-  --bosque-warning-soft: #fff7c2; /* amber-3 · solo chips pequeños */
   --bosque-danger: #ce2c31; /* red-11 · 4.5:1 sobre red-3 */
   --bosque-danger-soft: #feebec; /* red-3 */
 
-  /* Los tokens existentes apuntan a la nueva paleta */
-  --primary: var(--bosque-primary);
-  --primary-dark: var(--bosque-soft-ink);
-  --navy: var(--bosque-sidebar);
-  --navy-deep: var(--bosque-sidebar);
-  --lavender: var(--bosque-soft);
-  --ink: var(--bosque-ink);
-  --muted: var(--bosque-muted);
-  --line: var(--bosque-line);
-  --canvas: var(--bosque-sunken);
-  --mint: var(--bosque-primary);
-  /* Estados: el éxito usa el verde de marca (un color menos); ámbar y rojo de Radix */
-  --green: var(--bosque-primary);
-  --green-light: var(--bosque-soft);
-  --amber: var(--bosque-warning-ink);
-  --amber-light: var(--bosque-warning-soft);
-  --red: var(--bosque-danger);
-  --red-light: var(--bosque-danger-soft);
-
   accent-color: var(--bosque-primary); /* casillas de verificación */
   color: var(--bosque-ink);
-}
-
-html:has(.project-detail-page),
-body:has(.project-detail-page) {
-  background: #f6f8f7; /* --bosque-page: las variables del tema viven dentro de la página */
 }
 
 /* --- Layout: menú pegado al borde izquierdo, bajo la barra superior ------- */

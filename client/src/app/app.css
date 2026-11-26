@@ -34,7 +34,7 @@
 .brand-mark {
   align-items: flex-end;
   background: var(--navy-deep);
-  border-radius: 9px;
+  border-radius: 6px;
   display: inline-flex;
   gap: 3px;
   height: 32px;
@@ -44,7 +44,7 @@
 }
 
 .brand-mark i {
-  background: var(--mint);
+  background: var(--on-dark-accent);
   border-radius: 2px;
   display: block;
   height: 8px;
