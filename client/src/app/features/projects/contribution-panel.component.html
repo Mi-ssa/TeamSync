@@ -4,7 +4,7 @@
       <span class="eyebrow">{{ concluded() ? 'PROYECTO CONCLUIDO' : 'FASE ' + project().fase_actual + ' · CHECK-IN' }}</span>
       <h2 id="contribution-title">Contribuciones y cierre de fase</h2>
     </div>
-    <button class="button button-secondary button-small" type="button" [disabled]="loading()" (click)="load()">
+    <button class="button button-secondary button-small" type="button" [disabled]="loading()" (click)="load(true)">
       {{ loading() ? 'Actualizando…' : '↻ Actualizar' }}
     </button>
   </div>
@@ -57,9 +57,9 @@
                 </td>
                 <td>
                   @if (row.evaluaciones_pendientes === 0) {
-                    <span class="status status-approved">completo</span>
+                    <span class="status status-approved">Completo</span>
                   } @else {
-                    <span class="status status-pending">faltan {{ row.evaluaciones_pendientes }}</span>
+                    <span class="status status-pending">Faltan {{ row.evaluaciones_pendientes }}</span>
                   }
                   @if (row.promedio_evaluacion !== null) {
                     <small class="peer-score">★ {{ row.promedio_evaluacion }}/5</small>
@@ -83,36 +83,40 @@
           @for (peer of peers(); track peer.id) {
             @if (drafts[peer.id]; as draft) {
               <form class="check-in-row" (ngSubmit)="saveEvaluation(peer.id)">
-                <div class="check-in-person">
-                  <span class="member-avatar member-tone-{{ peer.id % 4 }}">{{ peer.nombre.charAt(0).toUpperCase() }}</span>
-                  <strong>{{ peer.nombre }}</strong>
-                  @if (evaluated(peer.id)) { <span class="status status-approved">evaluado</span> }
-                </div>
-                <div class="check-in-scores">
-                  <label>Comunicación
-                    <select [(ngModel)]="draft.comunicacion" [name]="'com-' + peer.id">
-                      @for (n of scale; track n) { <option [ngValue]="n">{{ n }}</option> }
-                    </select>
-                  </label>
-                  <label>Calidad
-                    <select [(ngModel)]="draft.calidad" [name]="'cal-' + peer.id">
-                      @for (n of scale; track n) { <option [ngValue]="n">{{ n }}</option> }
-                    </select>
-                  </label>
-                  <label>Compromiso
-                    <select [(ngModel)]="draft.compromiso" [name]="'comp-' + peer.id">
-                      @for (n of scale; track n) { <option [ngValue]="n">{{ n }}</option> }
-                    </select>
-                  </label>
+                <div class="check-in-top">
+                  <div class="check-in-person">
+                    <span class="member-avatar member-tone-{{ peer.id % 4 }}">{{ peer.nombre.charAt(0).toUpperCase() }}</span>
+                    <strong>{{ peer.nombre }}</strong>
+                    @if (evaluated(peer.id)) { <span class="status status-approved">Evaluado</span> }
+                  </div>
+                  <div class="check-in-scores">
+                    <label>Comunicación
+                      <select [(ngModel)]="draft.comunicacion" [name]="'com-' + peer.id">
+                        @for (n of scale; track n) { <option [ngValue]="n">{{ n }}</option> }
+                      </select>
+                    </label>
+                    <label>Calidad
+                      <select [(ngModel)]="draft.calidad" [name]="'cal-' + peer.id">
+                        @for (n of scale; track n) { <option [ngValue]="n">{{ n }}</option> }
+                      </select>
+                    </label>
+                    <label>Compromiso
+                      <select [(ngModel)]="draft.compromiso" [name]="'comp-' + peer.id">
+                        @for (n of scale; track n) { <option [ngValue]="n">{{ n }}</option> }
+                      </select>
+                    </label>
+                  </div>
                 </div>
                 <label class="check-in-confirm">
                   <input type="checkbox" [(ngModel)]="draft.confirma_aporte" [name]="'conf-' + peer.id" />
                   Confirmo que sus avances aprobados en esta fase reflejan lo que realmente aportó
                 </label>
-                <input class="check-in-comment" [(ngModel)]="draft.comentario" [name]="'coment-' + peer.id" maxlength="1000" placeholder="Comentario para el equipo (opcional)" [attr.aria-label]="'Comentario sobre ' + peer.nombre" />
-                <button class="button button-small" type="submit" [disabled]="saving() === peer.id">
-                  {{ saving() === peer.id ? 'Guardando…' : evaluated(peer.id) ? 'Actualizar' : 'Guardar' }}
-                </button>
+                <div class="check-in-bottom">
+                  <input class="check-in-comment" [(ngModel)]="draft.comentario" [name]="'coment-' + peer.id" maxlength="1000" placeholder="Comentario para el equipo (opcional)" [attr.aria-label]="'Comentario sobre ' + peer.nombre" />
+                  <button class="button button-small" type="submit" [disabled]="saving() === peer.id">
+                    {{ saving() === peer.id ? 'Guardando…' : evaluated(peer.id) ? 'Actualizar' : 'Guardar' }}
+                  </button>
+                </div>
               </form>
             }
           }

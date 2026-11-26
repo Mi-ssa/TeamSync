@@ -184,10 +184,13 @@ def calcular_contribucion(
                 promedio_evaluacion=promedio,
             )
         )
+        motivos = []
         if faltan > 0:
-            pendientes.append(f"{nombre} no ha terminado su check-in ({faltan} por evaluar)")
+            motivos.append(f"le falta evaluar a {faltan} compañero{'s' if faltan != 1 else ''}")
         if not cumple:
-            pendientes.append(f"{nombre} tiene {porcentaje}% de su parte justa (mínimo {minimo:g}%)")
+            motivos.append(f"lleva {porcentaje:g}% de su parte justa (mínimo {minimo:g}%)")
+        if motivos:
+            pendientes.append(f"{nombre}: " + " y ".join(motivos))
     if any(a.estado == "votacion" for a in actividades):
         pendientes.append("Hay actividades con la votación de puntos abierta")
     return puntos_fase, parte_justa, minimo, filas, pendientes

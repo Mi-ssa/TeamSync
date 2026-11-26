@@ -1,8 +1,9 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DatePipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { finalize, forkJoin } from 'rxjs';
+import { finalize, forkJoin, interval } from 'rxjs';
 import { apiErrorMessage } from '../../core/api-error';
 import { ActividadService } from '../../core/actividad.service';
 import { AuthService } from '../../core/auth.service';
@@ -20,6 +21,8 @@ import { ContributionPanelComponent } from './contribution-panel.component';
 })
 export class ProjectDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
+  private syncing = false;
   private readonly fb = inject(FormBuilder);
   private readonly projects = inject(ProyectoService);
   readonly auth = inject(AuthService);
@@ -91,6 +94,37 @@ export class ProjectDetailComponent implements OnInit {
         this.loadProject(id);
       }
     });
+    // Sincronización automática: lo que hacen los demás integrantes aparece solo.
+    interval(5000)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.syncInBackground());
+  }
+
+  /** Refresca en segundo plano sin mostrar "cargando" ni perder lo que estás escribiendo. */
+  syncInBackground(): void {
+    if (!this.projectId || this.syncing || this.loading() || document.hidden) {
+      return;
+    }
+    this.syncing = true;
+    forkJoin({
+      project: this.projects.getById(this.projectId),
+      members: this.projects.getMembers(this.projectId),
+      activities: this.activityService.sync(this.projectId),
+    })
+      .pipe(finalize(() => (this.syncing = false)))
+      .subscribe({
+        next: ({ project, members }) => {
+          if (JSON.stringify(project) !== JSON.stringify(this.project())) {
+            this.project.set(project);
+          }
+          if (JSON.stringify(members) !== JSON.stringify(this.members())) {
+            this.members.set(members);
+          }
+          this.refreshContribution.update((n) => n + 1);
+        },
+        // Un fallo momentáneo de red no debe interrumpir a la persona; se reintenta en 5 s.
+        error: () => undefined,
+      });
   }
 
   loadProject(id: number): void {
@@ -100,19 +134,13 @@ export class ProjectDetailComponent implements OnInit {
     forkJoin({
       project: this.projects.getById(id),
       members: this.projects.getMembers(id),
-      activities: this.activityService.loadForProject(id),
+      activities: this.activityService.sync(id),
     })
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
-        next: ({ project, members, activities }) => {
+        next: ({ project, members }) => {
           this.project.set(project);
           this.members.set(members);
-          for (const activity of activities) {
-            this.activityService.loadAdvances(activity.id).subscribe({
-              error: (error: unknown) =>
-                this.error.set(apiErrorMessage(error, 'No se pudieron cargar los avances.')),
-            });
-          }
         },
         error: (error: unknown) =>
           this.error.set(apiErrorMessage(error, 'No se pudo cargar el proyecto.')),
@@ -156,6 +184,16 @@ export class ProjectDetailComponent implements OnInit {
         (advance) => advance.estado === 'pendiente',
       )
     );
+  }
+
+  statusLabel(activity: Activity): string {
+    const labels: Record<string, string> = {
+      'en votación': 'En votación',
+      pendiente: 'Pendiente',
+      en_revision: 'En revisión',
+      aprobada: 'Aprobada',
+    };
+    return labels[this.status(activity)] ?? this.status(activity);
   }
 
   /** El líder revisa al equipo; los avances del líder los revisa otro integrante. */

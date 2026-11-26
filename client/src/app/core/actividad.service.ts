@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
-import { Observable, tap } from 'rxjs';
+import { Observable, forkJoin, map, of, switchMap, tap } from 'rxjs';
 import { API_URL } from './auth.service';
 import { Activity, Progress } from './models/activity.model';
 
@@ -19,6 +19,32 @@ export class ActividadService {
           this.advances.set({});
         }),
       );
+  }
+
+  /**
+   * Trae actividades y avances en una sola pasada y los publica juntos,
+   * para refrescar la vista sin vaciarla (sin parpadeos).
+   */
+  sync(projectId: number): Observable<void> {
+    return this.http.get<Activity[]>(`${API_URL}/proyectos/${projectId}/actividades`).pipe(
+      switchMap((activities) =>
+        (activities.length
+          ? forkJoin(
+              activities.map((activity) =>
+                this.http.get<Progress[]>(`${API_URL}/actividades/${activity.id}/avances`),
+              ),
+            )
+          : of([] as Progress[][])
+        ).pipe(map((lists) => ({ activities, lists }))),
+      ),
+      tap(({ activities, lists }) => {
+        const advances: Record<number, Progress[]> = {};
+        activities.forEach((activity, index) => (advances[activity.id] = lists[index]));
+        this.activities.set(activities);
+        this.advances.set(advances);
+      }),
+      map(() => undefined),
+    );
   }
 
   create(projectId: number, payload: {

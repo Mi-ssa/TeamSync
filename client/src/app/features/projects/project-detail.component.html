@@ -133,7 +133,7 @@
               <article class="activity-card panel">
                 <div class="activity-card-top">
                   <span class="activity-number">T{{ activity.id.toString().padStart(2, '0') }} · FASE {{ activity.fase }}</span>
-                  <span class="status {{ statusClass(activity) }}">{{ status(activity) }}</span>
+                  <span class="status {{ statusClass(activity) }}">{{ statusLabel(activity) }}</span>
                 </div>
                 <div class="activity-main">
                   <h3>{{ activity.nombre }}</h3>

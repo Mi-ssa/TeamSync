@@ -2,7 +2,7 @@
   align-items: start;
   display: grid;
   gap: 20px;
-  grid-template-columns: 215px minmax(0, 1fr);
+  grid-template-columns: 230px minmax(0, 1fr);
 }
 
 .project-sidebar {
@@ -75,7 +75,7 @@
   color: #fff;
   display: inline-flex;
   flex: 0 0 27px;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 800;
   height: 27px;
   justify-content: center;
@@ -89,13 +89,13 @@
 
 .sidebar-project small {
   color: #8592aa;
-  font-size: 7px;
+  font-size: 10px;
   letter-spacing: 0.6px;
 }
 
 .sidebar-project b {
   color: #fff;
-  font-size: 9px;
+  font-size: 11px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -115,7 +115,7 @@
   border-radius: 7px;
   color: #aab4c5;
   display: flex;
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 600;
   gap: 9px;
   min-height: 35px;
@@ -147,7 +147,7 @@
 
 .project-nav > small {
   color: #8d99ae;
-  font-size: 7px;
+  font-size: 10px;
   margin: -1px 0 4px 34px;
 }
 
@@ -156,7 +156,7 @@
   border-top: 1px solid #2b3752;
   color: #aab4c5;
   display: flex;
-  font-size: 9px;
+  font-size: 11px;
   gap: 7px;
   margin-top: auto;
   padding: 14px 5px 2px;
@@ -190,12 +190,12 @@
 
 .progress-heading .eyebrow {
   display: block;
-  font-size: 8px;
+  font-size: 11px;
   margin-bottom: 4px;
 }
 
 .progress-heading h2 {
-  font-size: 12px;
+  font-size: 14px;
   margin: 0;
 }
 
@@ -222,7 +222,7 @@
 
 .project-progress > p {
   color: var(--muted);
-  font-size: 8px;
+  font-size: 11px;
   margin: 0;
 }
 
@@ -230,7 +230,7 @@
   align-items: center;
   color: var(--muted);
   display: inline-flex;
-  font-size: 12px;
+  font-size: 14px;
   gap: 8px;
   margin-bottom: 20px;
   text-decoration: none;
@@ -296,7 +296,7 @@
   background: var(--lavender);
   border-radius: 99px;
   color: var(--primary-dark);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   padding: 5px 9px;
 }
@@ -309,7 +309,7 @@
 
 .project-hero-copy > p {
   color: var(--muted);
-  font-size: 12px;
+  font-size: 14px;
   margin: 0;
 }
 
@@ -331,14 +331,14 @@
 
 .project-hero-count small {
   color: var(--muted);
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .project-layout {
   align-items: start;
   display: grid;
-  gap: 14px;
-  grid-template-columns: minmax(0, 1fr) 270px;
+  gap: 20px;
+  grid-template-columns: minmax(0, 1fr) 300px;
 }
 
 .section-header {
@@ -372,7 +372,7 @@
 
 .activity-create-panel .section-title p {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 13px;
   margin: 5px 0 0;
 }
 
@@ -389,7 +389,7 @@
 
 .field-error {
   color: var(--red);
-  font-size: 11px;
+  font-size: 13px;
   margin: 0;
 }
 
@@ -403,7 +403,7 @@
 }
 
 .activity-card {
-  padding: 15px 16px;
+  padding: 20px 22px;
 }
 
 .activity-card-top {
@@ -415,7 +415,7 @@
 
 .activity-number {
   color: #aaa8b8;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.4px;
 }
@@ -428,7 +428,7 @@
 
 .activity-description {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 13px;
   line-height: 1.5;
   margin-bottom: 12px;
 }
@@ -444,7 +444,7 @@
   align-items: center;
   color: #55546b;
   display: inline-flex;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 600;
   gap: 7px;
 }
@@ -457,7 +457,7 @@
   color: var(--primary-dark);
   display: inline-flex;
   flex: 0 0 27px;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   height: 27px;
   justify-content: center;
@@ -469,7 +469,7 @@
   border-radius: 99px;
   color: #a16207;
   display: inline-flex;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 600;
   gap: 5px;
   padding: 6px 9px;
@@ -503,27 +503,29 @@
 
 .progress-label {
   color: #918ca9;
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.6px;
 }
 
 .progress-date {
   color: #a4a2af;
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .progress-item > p {
   color: #55546b;
-  font-size: 11px;
+  font-size: 13px;
   line-height: 1.55;
   margin: 0 0 7px;
   white-space: pre-wrap;
 }
 
 .evidence-link {
+  display: inline-block;
+  margin: 0 12px 8px 0;
   color: var(--primary);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   text-decoration: none;
 }
@@ -542,13 +544,13 @@
 .review-actions > span {
   color: var(--muted);
   flex: 1;
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .progress-result {
   border-radius: 99px;
   display: inline-flex;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   margin-top: 4px;
   padding: 5px 9px;
@@ -580,7 +582,7 @@
 .review-comment {
   border-left: 3px solid var(--red);
   color: #55546b;
-  font-size: 11px;
+  font-size: 13px;
   line-height: 1.55;
   margin: 8px 0 0;
   padding-left: 9px;
@@ -593,7 +595,7 @@
   border: 0;
   color: var(--primary);
   display: flex;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
   gap: 7px;
   margin-top: 14px;
@@ -711,7 +713,7 @@
 }
 
 .member-details strong {
-  font-size: 11px;
+  font-size: 13px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -719,7 +721,7 @@
 
 .member-details span {
   color: #9694a4;
-  font-size: 9px;
+  font-size: 11px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -729,7 +731,7 @@
   background: var(--lavender);
   border-radius: 99px;
   color: var(--primary);
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 700;
   padding: 5px 7px;
 }
@@ -747,12 +749,12 @@
 }
 
 .invite-caption strong {
-  font-size: 11px;
+  font-size: 13px;
 }
 
 .invite-caption span {
   color: var(--muted);
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .invite-form {
@@ -761,23 +763,23 @@
 }
 
 .invite-form .field label {
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .invite-form .field input {
-  font-size: 11px;
+  font-size: 13px;
   padding: 10px;
 }
 
 .invite-button {
-  font-size: 11px;
+  font-size: 13px;
   min-height: 37px;
   width: 100%;
 }
 
 .invite-feedback {
   border-radius: 8px;
-  font-size: 10px;
+  font-size: 12px;
   line-height: 1.45;
   margin: 10px 0 0;
   padding: 9px;
@@ -811,7 +813,7 @@
 
 .team-tip p {
   color: #686582;
-  font-size: 10px;
+  font-size: 12px;
   line-height: 1.55;
   margin: 0;
 }
@@ -819,6 +821,10 @@
 .optional {
   color: #a1a0af;
   font-weight: 400;
+}
+
+.project-detail-page {
+  max-width: 1320px;
 }
 
 @media (max-width: 880px) {

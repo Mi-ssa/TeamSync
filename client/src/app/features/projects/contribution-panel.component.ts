@@ -60,10 +60,14 @@ export class ContributionPanelComponent {
     });
   }
 
-  load(): void {
+  /** manual = la persona presionó "Actualizar"; si no, se refresca en silencio. */
+  load(manual = false): void {
     const project = this.project();
-    this.loading.set(true);
-    this.error.set('');
+    const visible = manual || this.summary() === null;
+    if (visible) {
+      this.loading.set(true);
+      this.error.set('');
+    }
     forkJoin({
       summary: this.fases.contribution(project.id),
       declaration: project.estado === 'concluido' ? this.fases.declaration(project.id) : of(null),
@@ -75,8 +79,11 @@ export class ContributionPanelComponent {
           this.declaration.set(declaration);
           this.buildDrafts(summary);
         },
-        error: (error: unknown) =>
-          this.error.set(apiErrorMessage(error, 'No se pudo cargar la contribución.')),
+        error: (error: unknown) => {
+          if (visible) {
+            this.error.set(apiErrorMessage(error, 'No se pudo cargar la contribución.'));
+          }
+        },
       });
   }
 
@@ -103,6 +110,7 @@ export class ContributionPanelComponent {
       .subscribe({
         next: () => {
           this.message.set('Check-in guardado.');
+          delete this.drafts[memberId];
           this.load();
         },
         error: (error: unknown) =>
@@ -172,6 +180,11 @@ export class ContributionPanelComponent {
     const drafts: Record<number, PeerEvaluationInput> = {};
     for (const peer of this.peers()) {
       const previous = summary.mis_evaluaciones.find((e) => e.evaluado_id === peer.id);
+      // Conserva lo que la persona está llenando aunque llegue una actualización.
+      if (this.drafts[peer.id]) {
+        drafts[peer.id] = this.drafts[peer.id];
+        continue;
+      }
       drafts[peer.id] = {
         evaluado_id: peer.id,
         comunicacion: previous?.comunicacion ?? 3,
