@@ -5,6 +5,7 @@ from sqlmodel import select
 
 from app.auth import CurrentUser, SessionDep
 from app.models import Actividad, Avance, Proyecto, VotoPuntos
+from app.notificaciones import enlace_proyecto, ids_miembros, notificar, notificar_varios
 from app.reglas import acordar_puntos, actividad_public, miembros_aceptados, votos_de
 from app.routers.proyectos import get_accepted_participation
 from app.schemas import ActividadPublic, AvanceCreate, AvanceDecision, AvancePublic, VotoCreate
@@ -48,6 +49,21 @@ def registrar_avance(
         url_evidencia=payload.url_evidencia,
     )
     session.add(avance)
+    # Revisa el líder; si el avance es del líder, lo puede revisar cualquier otro integrante.
+    lider = next(m for m in miembros_aceptados(session, actividad.proyecto_id) if m.rol == "lider")
+    revisores = (
+        ids_miembros(session, actividad.proyecto_id, excepto=usuario.id)
+        if usuario.id == lider.usuario_id
+        else [lider.usuario_id]
+    )
+    notificar_varios(
+        session,
+        revisores,
+        "revision",
+        f"Revisa el avance de {usuario.nombre}",
+        f"Envió un avance en «{actividad.nombre}» ({proyecto.nombre}).",
+        enlace_proyecto(actividad.proyecto_id, "actividades"),
+    )
     session.commit()
     session.refresh(avance)
     return AvancePublic.from_model(avance)
@@ -94,10 +110,36 @@ def revisar_avance(
     avance.estado = payload.estado
     avance.comentario_revision = comentario
     avance.revisado_en = datetime.now(timezone.utc)
+    checkin_ya_abierto = (
+        session.exec(
+            select(Actividad).where(
+                Actividad.proyecto_id == actividad.proyecto_id,
+                Actividad.fase == actividad.fase,
+                Actividad.estado == "completada",
+            )
+        ).first()
+        is not None
+    )
     if payload.estado == "aprobado":
         actividad.estado = "completada"
     session.add(avance)
     session.add(actividad)
+    enlace = enlace_proyecto(actividad.proyecto_id, "actividades")
+    if payload.estado == "aprobado":
+        notificar(session, avance.usuario_id, "resultado", f"Aprobaron tu avance en «{actividad.nombre}»",
+                  f"{usuario.nombre} lo aprobó. Ya cuenta para tu contribución.", enlace)
+    else:
+        notificar(session, avance.usuario_id, "resultado", f"Rechazaron tu avance en «{actividad.nombre}»",
+                  f"{usuario.nombre}: {comentario}", enlace)
+    if payload.estado == "aprobado" and not checkin_ya_abierto:
+        notificar_varios(
+            session,
+            ids_miembros(session, actividad.proyecto_id),
+            "checkin",
+            f"Ya puedes hacer tu check-in de la fase {actividad.fase}",
+            "Hay trabajo aprobado: confirma el aporte de tus compañeros y califícalos.",
+            enlace_proyecto(actividad.proyecto_id, "contribuciones"),
+        )
     session.commit()
     session.refresh(avance)
     return AvancePublic.from_model(avance)

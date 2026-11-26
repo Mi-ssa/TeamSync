@@ -93,6 +93,7 @@
             <div>
               <h3>Tu check-in de la fase {{ data.fase }}</h3>
               <p>Confirma si los avances aprobados de cada compañero reflejan lo que realmente aportó.</p>
+              <p class="check-in-guide">Para comentar: describe una acción concreta y qué efecto tuvo en el equipo; habla de lo que hizo, no de cómo es la persona. Cada quien verá lo que recibió cuando el líder cierre la fase.</p>
             </div>
             <span>{{ checkInDone() }} de {{ peers().length }} compañeros evaluados</span>
           </div>
@@ -106,29 +107,29 @@
                     @if (evaluated(peer.id)) { <span class="status status-approved">Evaluado</span> }
                   </div>
                   <div class="check-in-scores">
-                    <label>Comunicación
-                      <select [(ngModel)]="draft.comunicacion" [name]="'com-' + peer.id">
-                        @for (n of scale; track n) { <option [ngValue]="n">{{ n }}</option> }
-                      </select>
-                    </label>
-                    <label>Calidad
-                      <select [(ngModel)]="draft.calidad" [name]="'cal-' + peer.id">
-                        @for (n of scale; track n) { <option [ngValue]="n">{{ n }}</option> }
-                      </select>
-                    </label>
-                    <label>Compromiso
-                      <select [(ngModel)]="draft.compromiso" [name]="'comp-' + peer.id">
-                        @for (n of scale; track n) { <option [ngValue]="n">{{ n }}</option> }
-                      </select>
-                    </label>
+                    @for (c of criteria; track c.key) {
+                      <label>{{ c.label }}
+                        <select [(ngModel)]="draft[c.key]" [name]="c.key + '-' + peer.id">
+                          @for (n of scale; track n) { <option [ngValue]="n">{{ n }} · {{ anchors[c.key][n - 1] }}</option> }
+                        </select>
+                      </label>
+                    }
                   </div>
                 </div>
                 <label class="check-in-confirm">
                   <input type="checkbox" [(ngModel)]="draft.confirma_aporte" [name]="'conf-' + peer.id" />
                   Confirmo que sus avances aprobados en esta fase reflejan lo que realmente aportó
                 </label>
+                <div class="check-in-feedback">
+                  <label>Algo que hizo bien
+                    <textarea [(ngModel)]="draft.fortaleza" [name]="'fortaleza-' + peer.id" maxlength="500" rows="2" placeholder="Ej.: Avisó con tiempo cuando se iba a retrasar con el prototipo."></textarea>
+                  </label>
+                  <label>Algo que podría mejorar
+                    <textarea [(ngModel)]="draft.mejora" [name]="'mejora-' + peer.id" maxlength="500" rows="2" placeholder="Ej.: Subir los avances antes del viernes para revisarlos con calma."></textarea>
+                  </label>
+                </div>
                 <div class="check-in-bottom">
-                  <input class="check-in-comment" [(ngModel)]="draft.comentario" [name]="'coment-' + peer.id" maxlength="1000" placeholder="Comentario para el equipo (opcional)" [attr.aria-label]="'Comentario sobre ' + peer.nombre" />
+                  <span class="check-in-privacy">{{ peers().length > 1 ? 'Tu nombre no aparece junto a tus comentarios.' : 'Como son dos, tu compañero sabrá que estos comentarios son tuyos.' }}</span>
                   <button class="button button-small" type="submit" [disabled]="saving() === peer.id">
                     {{ saving() === peer.id ? 'Guardando…' : evaluated(peer.id) ? 'Actualizar' : 'Guardar' }}
                   </button>
@@ -165,6 +166,64 @@
           }
         </div>
       }
+    }
+
+    @if (feedback(); as fb) {
+      <div class="my-feedback" id="mi-retroalimentacion">
+        <div class="my-feedback-heading">
+          <h3>Tu retroalimentación</h3>
+          <p>Lo que tus compañeros te dijeron en cada check-in. Se muestra al cerrar la fase y sin nombres.</p>
+        </div>
+        @for (f of fb.fases; track f.fase) {
+          <section class="feedback-phase" [attr.aria-label]="'Retroalimentación de la fase ' + f.fase">
+            <div class="feedback-phase-top">
+              <strong>Fase {{ f.fase }}</strong>
+              <span>{{ f.evaluaciones }} {{ f.evaluaciones === 1 ? 'compañero te evaluó' : 'compañeros te evaluaron' }} · {{ f.confirmaciones }} confirmaron tu aporte</span>
+            </div>
+            <div class="feedback-scores">
+              @for (c of criteria; track c.key) {
+                <div class="feedback-score">
+                  <span>{{ c.label }}</span>
+                  <b>{{ f[c.key] }}<small>/5</small></b>
+                  <div class="share-bar share-ok" aria-hidden="true"><span [style.width.%]="(f[c.key] ?? 0) * 20"></span></div>
+                  <small>{{ anchorFor(c.key, f[c.key]) }}</small>
+                </div>
+              }
+            </div>
+            @if (f.fortalezas.length || f.mejoras.length || f.comentarios.length) {
+              <div class="feedback-comments">
+                @if (f.fortalezas.length) {
+                  <div>
+                    <h4>Lo que hiciste bien</h4>
+                    <ul>@for (t of f.fortalezas; track $index) { <li>{{ t }}</li> }</ul>
+                  </div>
+                }
+                @if (f.mejoras.length) {
+                  <div>
+                    <h4>Lo que podrías mejorar</h4>
+                    <ul>@for (t of f.mejoras; track $index) { <li>{{ t }}</li> }</ul>
+                  </div>
+                }
+                @if (f.comentarios.length) {
+                  <div>
+                    <h4>Comentarios</h4>
+                    <ul>@for (t of f.comentarios; track $index) { <li>{{ t }}</li> }</ul>
+                  </div>
+                }
+              </div>
+            } @else {
+              <p class="contribution-hint">Nadie dejó comentarios escritos en esta fase.</p>
+            }
+            @if (!f.anonima) {
+              <p class="contribution-hint">Solo te evaluó una persona, así que estos comentarios no son anónimos.</p>
+            }
+          </section>
+        } @empty {
+          <p class="contribution-hint">
+            {{ fb.fase_en_curso ? 'Tu retroalimentación de la fase ' + fb.fase_en_curso + ' aparecerá aquí cuando el líder la cierre.' : 'No recibiste evaluaciones en este proyecto.' }}
+          </p>
+        }
+      </div>
     }
 
     @if (declaration(); as decl) {

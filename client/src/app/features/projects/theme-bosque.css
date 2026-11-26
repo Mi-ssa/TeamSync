@@ -1,0 +1,349 @@
+/*
+ * Tema "bosque + salvia" para la página del proyecto.
+ * Solo cambia la apariencia: redefine los tokens dentro de .page.project-detail-page
+ * y sobrescribe los colores fijos que no usaban variables.
+ * Contrastes verificados (WCAG AA, mínimo 4.5:1) en el comentario de cada token.
+ */
+
+.page.project-detail-page {
+  /* Paleta bosque + salvia neutra */
+  --bosque-sidebar: #1b2f24;
+  --bosque-sidebar-raised: #24402f; /* recuadro del proyecto en el menú */
+  --bosque-sidebar-line: #31523f;
+  --bosque-cream: #faf6ee; /* texto sobre sidebar: 13.2:1 */
+  --bosque-cream-muted: #d4cfc2; /* menú inactivo sobre sidebar: 9.1:1 */
+  --bosque-cream-faint: #b8b3a3; /* textos pequeños del menú: 5.4:1 */
+  --bosque-primary: #2d6a4f; /* blanco encima: 6.4:1 */
+  --bosque-primary-hover: #24573f;
+  --bosque-page: #f6f8f7; /* fondo de página: salvia neutra */
+  --bosque-card: #ffffff;
+  --bosque-soft: #d8f3dc;
+  --bosque-soft-ink: #1b4332; /* sobre chip suave: 9.4:1 */
+  --bosque-line: #d7dad9; /* sage-6: bordes sutiles */
+  --bosque-sunken: var(--bosque-page); /* cajas dentro de tarjetas: el mismo fondo de la página */
+  --bosque-track: #e6e9e8; /* sage-4: fondo de barras de progreso */
+  --bosque-terracota: #bc6c25; /* solo decorativo (bordes) */
+  --bosque-terracota-dark: #9a4e16; /* fondo con texto blanco: 6.0:1 */
+
+  /* Neutros y estados tomados de Radix Colors v3 (escalas sage, amber y red):
+     paso 11 = texto de bajo contraste, paso 12 = texto de alto contraste. */
+  --bosque-ink: #1f2a24; /* 13.9:1 sobre fondo, 14.9:1 sobre tarjeta */
+  --bosque-text-2: #5f6563; /* sage-11 · 6.0:1 tarjeta / 5.6:1 fondo */
+  --bosque-muted: #5f6563; /* sage-11: un solo gris para textos secundarios */
+  --bosque-warning-line: #ab6400; /* amber-11 · franja de aviso, 4.3:1 sobre fondo */
+  --bosque-warning-ink: #4f3422; /* amber-12 · texto ámbar, 10.5:1 sobre amber-3 */
+  --bosque-danger: #ce2c31; /* red-11 · 4.5:1 sobre red-3 */
+  --bosque-danger-soft: #feebec; /* red-3 */
+
+  accent-color: var(--bosque-primary); /* casillas de verificación */
+  color: var(--bosque-ink);
+}
+
+/* --- Layout: menú pegado al borde izquierdo, bajo la barra superior ------- */
+
+.page.project-detail-page {
+  margin: 0;
+  max-width: none;
+  padding: 0;
+}
+
+.page.project-detail-page .project-shell {
+  align-items: stretch;
+  gap: 0;
+}
+
+.page.project-detail-page .project-sidebar {
+  background: var(--bosque-sidebar);
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  color: var(--bosque-cream-muted);
+  height: calc(100vh - 72px); /* 72px = alto de la barra superior */
+  min-height: 0;
+  overflow-y: auto;
+  position: sticky;
+  top: 72px;
+}
+
+.page.project-detail-page .project-content {
+  min-width: 0;
+  padding: 28px 32px 64px;
+}
+
+/* --- Menú lateral -------------------------------------------------------- */
+
+.page.project-detail-page .sidebar-brand {
+  color: var(--bosque-cream);
+}
+
+.page.project-detail-page .sidebar-brand .brand-mark {
+  background: var(--bosque-primary);
+  border-radius: 6px;
+}
+
+.page.project-detail-page .sidebar-project {
+  background: var(--bosque-sidebar-raised);
+  border: 1px solid var(--bosque-sidebar-line);
+  border-radius: 6px;
+}
+
+.page.project-detail-page .sidebar-project-mark {
+  background: var(--bosque-terracota-dark);
+  border-radius: 6px;
+  color: #fff;
+}
+
+.page.project-detail-page .sidebar-project small {
+  color: var(--bosque-cream-faint);
+}
+
+.page.project-detail-page .sidebar-project b {
+  color: var(--bosque-cream);
+}
+
+.page.project-detail-page .project-nav button {
+  border-radius: 6px;
+  color: var(--bosque-cream-muted);
+}
+
+.page.project-detail-page .project-nav button:hover {
+  background: rgba(250, 246, 238, 0.08);
+  color: var(--bosque-cream);
+}
+
+.page.project-detail-page .project-nav button.active {
+  background: var(--bosque-primary);
+  color: #fff;
+}
+
+.page.project-detail-page .nav-count {
+  background: var(--bosque-cream);
+  border-radius: 6px;
+  color: var(--bosque-sidebar);
+}
+
+.page.project-detail-page .sidebar-back {
+  border-top-color: var(--bosque-sidebar-line);
+  color: var(--bosque-cream-muted);
+}
+
+.page.project-detail-page .sidebar-back:hover {
+  color: var(--bosque-cream);
+}
+
+/* --- Superficies: tarjetas sin sombra, borde fino y radio de 6px --------- */
+
+.page.project-detail-page :is(.panel, .card, .project-hero, .activity-card, .member-card) {
+  background: var(--bosque-card);
+  border: 1px solid var(--bosque-line);
+  box-shadow: none;
+}
+
+.page.project-detail-page
+  :is(
+    .panel,
+    .card,
+    .project-hero,
+    .activity-card,
+    .member-card,
+    .button,
+    input,
+    select,
+    textarea,
+    .check-in-row,
+    .check-in-closed,
+    .vote-box,
+    .private-notice,
+    .phase-blockers,
+    .confirm-box,
+    .declaration,
+    .fair-share-chips span,
+    .attention-list li,
+    .attention-icon,
+    .advance-form,
+    .invite-panel,
+    .contribution-message,
+    .error-message,
+    .success-message
+  ) {
+  border-radius: 6px;
+}
+
+.page.project-detail-page .button {
+  box-shadow: none;
+}
+
+.page.project-detail-page .button:not(.button-secondary):not(.button-danger):not(:disabled):hover {
+  background: var(--bosque-primary-hover);
+}
+
+.page.project-detail-page .button-secondary {
+  background: var(--bosque-card);
+  border-color: var(--bosque-line);
+  color: var(--bosque-ink);
+}
+
+.page.project-detail-page .button-secondary:not(:disabled):hover {
+  background: var(--bosque-sunken);
+}
+
+.page.project-detail-page :is(input, select, textarea) {
+  background: var(--bosque-card);
+  border-color: var(--bosque-line);
+  color: var(--bosque-ink);
+}
+
+.page.project-detail-page :is(input, select, textarea):focus {
+  border-color: var(--bosque-primary);
+  box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.18);
+}
+
+/* --- Encabezado y progreso ----------------------------------------------- */
+
+.page.project-detail-page .project-hero {
+  background: var(--bosque-card);
+}
+
+.page.project-detail-page .project-hero-icon {
+  background: var(--bosque-terracota-dark);
+  border: 0;
+  border-radius: 6px;
+  box-shadow: none;
+}
+
+.page.project-detail-page .project-progress .progress-track,
+.page.project-detail-page .share-bar {
+  background: var(--bosque-track);
+}
+
+.page.project-detail-page .project-progress .progress-track span {
+  background: var(--bosque-primary);
+}
+
+/* --- Avatares: detalle terracota ----------------------------------------- */
+
+.page.project-detail-page :is(.member-tone-0, .member-tone-1, .member-tone-2, .member-tone-3) {
+  background: var(--bosque-card);
+  box-shadow: inset 0 0 0 2px var(--bosque-terracota);
+  color: var(--bosque-soft-ink);
+}
+
+/* --- Textos que tenían grises fijos (algunos no llegaban a 4.5:1) ------- */
+
+.page.project-detail-page
+  :is(
+    .assignee,
+    .progress-item > p,
+    .review-comment,
+    .vote-box p,
+    .check-in-confirm,
+    .check-in-closed p,
+    .check-in-heading p,
+    .team-tip p
+  ) {
+  color: var(--bosque-text-2);
+}
+
+.page.project-detail-page
+  :is(.activity-number, .progress-label, .progress-date, .member-details span, .optional) {
+  color: var(--bosque-muted);
+}
+
+.page.project-detail-page :is(.progress-list, .progress-item, .member-row, .invite-section) {
+  border-color: var(--bosque-line);
+}
+
+/* --- Cajas internas -------------------------------------------------------- */
+
+.page.project-detail-page .advance-form,
+.page.project-detail-page .vote-box {
+  background: var(--bosque-sunken);
+  border-color: var(--bosque-line);
+}
+
+.page.project-detail-page .team-tip {
+  background: var(--bosque-sunken);
+  border-color: var(--bosque-line);
+}
+
+.page.project-detail-page .declaration {
+  border-color: var(--bosque-line);
+}
+
+.page.project-detail-page .phase-badge {
+  background: var(--bosque-soft);
+  color: var(--bosque-soft-ink);
+}
+
+/* --- Avisos en línea (patrón de IBM Carbon): fondo neutro, franja de 3px a
+ * la izquierda en el color del estado y texto oscuro. Así el color marca el
+ * tipo de aviso sin teñir toda la caja. ----------------------------------- */
+
+.page.project-detail-page :is(.private-notice, .check-in-closed, .contribution-message, .phase-blockers) {
+  background: var(--bosque-sunken);
+  border: 1px solid var(--bosque-line);
+  border-left: 3px solid var(--bosque-primary); /* informativo */
+  color: var(--bosque-ink);
+}
+
+.page.project-detail-page .phase-blockers {
+  border-left-color: var(--bosque-warning-line); /* advertencia: bloquea el cierre */
+}
+
+.page.project-detail-page .phase-blockers strong {
+  color: var(--bosque-warning-ink);
+}
+
+.page.project-detail-page .check-in-closed strong {
+  color: var(--bosque-ink);
+}
+
+/* --- Tabla de contribución: el color solo marca lo que ya cumple --------- */
+
+.page.project-detail-page .contribution-panel .status-pending {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--bosque-line);
+  color: var(--bosque-text-2);
+}
+
+.page.project-detail-page .share-bar span {
+  background: var(--bosque-text-2); /* 4.9:1 sobre el fondo de la barra */
+}
+
+.page.project-detail-page .share-bar.share-ok span {
+  background: var(--bosque-primary);
+}
+
+.page.project-detail-page .share-value {
+  color: var(--bosque-ink);
+}
+
+.page.project-detail-page .share-value.share-ok {
+  color: var(--bosque-primary);
+}
+
+/* --- Foco de teclado visible --------------------------------------------- */
+
+.page.project-detail-page :is(a, button, input, select, textarea):focus-visible {
+  outline: 3px solid var(--bosque-primary);
+  outline-offset: 2px;
+}
+
+.page.project-detail-page .project-sidebar :is(a, button):focus-visible {
+  outline: 2px solid var(--bosque-cream);
+  outline-offset: 2px;
+}
+
+/* --- Móvil: el menú va arriba a todo lo ancho, sin margen ---------------- */
+
+@media (max-width: 700px) {
+  .page.project-detail-page .project-sidebar {
+    height: auto;
+    overflow: visible;
+    position: static;
+  }
+
+  .page.project-detail-page .project-content {
+    padding: 20px 16px 48px;
+  }
+}

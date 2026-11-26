@@ -227,7 +227,8 @@
                             <div class="reject-form">
                               <div class="field">
                                 <label [for]="'reject-comment-' + progress.id">¿Qué debe corregir?</label>
-                                <textarea [id]="'reject-comment-' + progress.id" maxlength="1000" placeholder="Explica por qué rechazas el avance…" [value]="rejectComment()" (input)="rejectComment.set($any($event.target).value)"></textarea>
+                                <textarea [id]="'reject-comment-' + progress.id" maxlength="1000" placeholder="Ej.: Falta la bibliografía en formato IEEE; agrégala y vuelve a enviarlo." [value]="rejectComment()" (input)="rejectComment.set($any($event.target).value)" [attr.aria-describedby]="'reject-hint-' + progress.id"></textarea>
+                                <small class="reject-hint" [id]="'reject-hint-' + progress.id">Di qué falta y cómo corregirlo. Habla del trabajo, no de la persona.</small>
                                 @if (rejectError()) {
                                   <span class="field-error">{{ rejectError() }}</span>
                                 }

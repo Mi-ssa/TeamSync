@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import create_db_and_tables
-from app.routers import actividades, admin, auth, fases, proyectos
+from app.routers import actividades, admin, auth, fases, notificaciones, proyectos
 
 
 @asynccontextmanager
@@ -27,6 +27,7 @@ app.include_router(proyectos.router)
 app.include_router(actividades.router)
 app.include_router(fases.router)
 app.include_router(admin.router)
+app.include_router(notificaciones.router)
 
 
 @app.get("/health", tags=["Sistema"])

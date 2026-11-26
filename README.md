@@ -22,6 +22,7 @@ de cada fase, su aporte se **valida entre pares** y, al concluir, el equipo firm
 | 7. Contribución vs. parte justa | Parte justa = puntos acordados de la fase ÷ integrantes. Puntos validados = puntos aprobados que confirmó la mayoría de los pares. Cumplimiento = validados ÷ parte justa. La fase solo se cierra si todos alcanzan el mínimo y terminaron su check-in. Cada integrante recibe un aviso privado y el líder ve al equipo completo. |
 | 8. Declaración y firma | Cuando el líder concluye el proyecto, se genera la declaración con los puntos y el porcentaje de cada persona. **Sin aporte validado no hay firma.** |
 | Administrador | Gestiona usuarios (activar, desactivar y dar rol de admin), configura los parámetros (porcentaje mínimo y días de inactividad) y consulta reportes por proyecto. |
+| Notificaciones | Campana en la barra superior con avisos de invitaciones, votaciones, avances por revisar, resultados de revisión, check-in abierto, cierre de fase y declaración por firmar, más recordatorios diarios ("No olvides enviar tu avance", "No olvides calificar a tus compañeros"). Con permiso del navegador, también llegan como notificación del sistema cuando TeamSync está abierto en otra pestaña. |
 
 ## Requisitos
 

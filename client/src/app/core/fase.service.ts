@@ -5,6 +5,7 @@ import { API_URL } from './auth.service';
 import {
   ContributionSummary,
   Declaration,
+  MyFeedback,
   PeerEvaluation,
   PeerEvaluationInput,
 } from './models/contribution.model';
@@ -20,6 +21,10 @@ export class FaseService {
 
   evaluate(projectId: number, payload: PeerEvaluationInput): Observable<PeerEvaluation> {
     return this.http.post<PeerEvaluation>(`${API_URL}/proyectos/${projectId}/evaluaciones`, payload);
+  }
+
+  myFeedback(projectId: number): Observable<MyFeedback> {
+    return this.http.get<MyFeedback>(`${API_URL}/proyectos/${projectId}/mi-retroalimentacion`);
   }
 
   closePhase(projectId: number): Observable<Project> {

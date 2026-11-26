@@ -197,6 +197,8 @@ class EvaluacionCreate(SQLModel):
     compromiso: int = Field(ge=1, le=5)
     confirma_aporte: bool = True
     comentario: str | None = Field(default=None, max_length=1000)
+    fortaleza: str | None = Field(default=None, max_length=500)
+    mejora: str | None = Field(default=None, max_length=500)
 
 
 class EvaluacionPublic(SQLModel):
@@ -210,6 +212,29 @@ class EvaluacionPublic(SQLModel):
     puntuacion: float
     confirma_aporte: bool
     comentario: str | None
+    fortaleza: str | None = None
+    mejora: str | None = None
+
+
+class RetroalimentacionFase(SQLModel):
+    """Lo que el equipo le dijo a una persona en el check-in de una fase (sin nombres)."""
+
+    fase: int
+    evaluaciones: int
+    comunicacion: float | None
+    calidad: float | None
+    compromiso: float | None
+    promedio: float | None
+    confirmaciones: int
+    fortalezas: list[str]
+    mejoras: list[str]
+    comentarios: list[str]
+    anonima: bool
+
+
+class RetroalimentacionResponse(SQLModel):
+    fases: list[RetroalimentacionFase]
+    fase_en_curso: int | None
 
 
 class ContribucionIntegrante(SQLModel):
@@ -299,3 +324,18 @@ class ReporteResponse(SQLModel):
     porcentaje_minimo: float
     dias_inactividad: int
     detalle: list[ReporteProyecto]
+
+
+class NotificacionPublic(SQLModel):
+    id: int
+    tipo: str
+    titulo: str
+    mensaje: str
+    enlace: str
+    leida: bool
+    creado_en: str
+
+
+class NotificacionesResponse(SQLModel):
+    no_leidas: int
+    notificaciones: list[NotificacionPublic]
